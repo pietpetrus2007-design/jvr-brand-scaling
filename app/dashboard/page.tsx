@@ -8,15 +8,17 @@ export default async function DashboardPage() {
   const session = await auth()
   if (!session?.user?.id) redirect("/login")
 
+  const userId = session.user.id as string
+
   const [modules, progressRecords] = await Promise.all([
     prisma.module.findMany({
       include: { lessons: { orderBy: { order: "asc" } } },
       orderBy: { order: "asc" },
     }),
-    prisma.progress.findMany({ where: { userId: session.user.id }, select: { lessonId: true } }),
+    prisma.progress.findMany({ where: { userId }, select: { lessonId: true } }),
   ])
 
-  const completedIds = new Set(progressRecords.map((p) => p.lessonId))
+  const completedIds = progressRecords.map((p: { lessonId: string }) => p.lessonId)
 
-  return <CourseView modules={modules} completedIds={Array.from(completedIds)} userId={session.user.id} />
+  return <CourseView modules={modules} completedIds={completedIds} userId={userId} />
 }

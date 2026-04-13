@@ -2,8 +2,9 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
-import { Tier } from "@prisma/client"
 import { nanoid } from "nanoid"
+
+type Tier = "basic" | "community" | "mentorship"
 
 async function requireAdmin() {
   const session = await auth()

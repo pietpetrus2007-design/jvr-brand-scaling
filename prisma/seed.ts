@@ -1,4 +1,6 @@
-import { PrismaClient, Tier } from "@prisma/client"
+import { PrismaClient } from "@prisma/client"
+
+type Tier = "basic" | "community" | "mentorship"
 import { PrismaNeon } from "@prisma/adapter-neon"
 import bcrypt from "bcryptjs"
 import "dotenv/config"

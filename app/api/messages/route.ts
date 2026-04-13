@@ -2,8 +2,9 @@ export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/lib/auth"
 import prisma from "@/lib/prisma"
-import { Room } from "@prisma/client"
 import { TIER_ORDER } from "@/lib/utils"
+
+type Room = "wins" | "chatting" | "qa" | "private"
 
 const ROOM_MIN_TIER: Record<Room, keyof typeof TIER_ORDER> = {
   wins: "basic",

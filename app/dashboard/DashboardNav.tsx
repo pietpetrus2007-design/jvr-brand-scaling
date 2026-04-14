@@ -18,12 +18,12 @@ export default function DashboardNav({ user }: Props) {
   const pathname = usePathname()
 
   const links = [
-    { href: "/dashboard", label: "Course" },
-    { href: "/dashboard/community", label: "Community" },
-    { href: "/dashboard/tracker", label: "📊 Tracker" },
-    { href: "/dashboard/announcements", label: "Announcements" },
-    { href: "/dashboard/profile", label: "Profile" },
-    ...(user.role === "admin" ? [{ href: "/admin", label: "Admin" }] : []),
+    { href: "/dashboard", label: "Course", icon: "📚" },
+    { href: "/dashboard/community", label: "Community", icon: "💬" },
+    { href: "/dashboard/tracker", label: "Tracker", icon: "📊" },
+    { href: "/dashboard/announcements", label: "Announcements", icon: "📢" },
+    { href: "/dashboard/profile", label: "Profile", icon: "👤" },
+    ...(user.role === "admin" ? [{ href: "/admin", label: "Admin", icon: "⚙️" }] : []),
   ]
 
   const initials = user.name
@@ -52,7 +52,7 @@ export default function DashboardNav({ user }: Props) {
                       : "text-[#888] hover:text-white hover:bg-white/5"
                   }`}
                 >
-                  {l.label}
+                  <span className="mr-1">{l.icon}</span>{l.label}
                 </Link>
               )
             })}
@@ -92,11 +92,12 @@ export default function DashboardNav({ user }: Props) {
             <Link
               key={l.href}
               href={l.href}
-              className={`flex-1 text-center py-2.5 text-xs font-medium transition-colors duration-150 whitespace-nowrap px-3 ${
+              className={`flex-1 flex flex-col items-center justify-center py-2 text-xs font-medium transition-colors duration-150 px-1 ${
                 isActive ? "text-[#FF6B00] border-b-2 border-[#FF6B00]" : "text-[#888]"
               }`}
             >
-              {l.label}
+              <span className="text-base">{l.icon}</span>
+              <span className="text-[10px] mt-0.5">{l.label}</span>
             </Link>
           )
         })}

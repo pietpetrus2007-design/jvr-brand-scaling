@@ -126,13 +126,11 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               : 'border-white/8 bg-white/3 opacity-60'
           }`}>
             <div className="mb-3">
-              <div className="flex items-center justify-between">
-                <span className="text-blue-400 font-bold text-sm">Community</span>
-{TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['community'] && (
-                  <span className="text-[#FF6B00] text-xs font-semibold">+R2,000 to upgrade</span>
-                )}
-              </div>
+              <span className="text-blue-400 font-bold text-sm">Community</span>
               {currentTier === 'community' && <span className="inline-block mt-1 text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
+              {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['community'] && (
+                <p className="text-[#FF6B00] text-xs font-semibold mt-1">+R2,000 to upgrade</p>
+              )}
             </div>
             <ul className="space-y-1.5 text-xs text-[#888] mb-4">
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Everything in Basic</li>
@@ -155,15 +153,13 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               : 'border-white/8 bg-white/3 opacity-60'
           }`}>
             <div className="mb-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[#FF6B00] font-bold text-sm">Mentorship</span>
-{TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['mentorship'] && (
-                  <span className="text-[#FF6B00] text-xs font-semibold">
-                    {currentTier === 'basic' ? '+R6,000 to upgrade' : '+R4,000 to upgrade'}
-                  </span>
-                )}
-              </div>
+              <span className="text-[#FF6B00] font-bold text-sm">Mentorship</span>
               {currentTier === 'mentorship' && <span className="inline-block mt-1 text-xs bg-[#FF6B00]/20 text-[#FF6B00] px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
+              {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['mentorship'] && (
+                <p className="text-[#FF6B00] text-xs font-semibold mt-1">
+                  {currentTier === 'basic' ? '+R6,000 to upgrade' : '+R4,000 to upgrade'}
+                </p>
+              )}
             </div>
             <ul className="space-y-1.5 text-xs text-[#888] mb-4">
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Everything in Community</li>

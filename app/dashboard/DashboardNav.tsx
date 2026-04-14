@@ -20,6 +20,7 @@ export default function DashboardNav({ user }: Props) {
   const links = [
     { href: "/dashboard", label: "Course" },
     { href: "/dashboard/community", label: "Community" },
+    { href: "/dashboard/announcements", label: "📢 Announcements" },
     { href: "/dashboard/profile", label: "Profile" },
     ...(user.role === "admin" ? [{ href: "/admin", label: "Admin" }] : []),
   ]

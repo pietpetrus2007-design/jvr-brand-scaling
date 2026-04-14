@@ -6,6 +6,7 @@ import { TIER_ORDER, UPGRADE_LINKS } from "@/lib/utils"
 interface Message {
   id: string
   content: string
+  imageUrl?: string | null
   createdAt: string
   room: string
   targetUserId?: string | null
@@ -49,6 +50,10 @@ export default function CommunityView({ userId, userName, userTier, userRole }: 
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [sending, setSending] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const userTierLevel = TIER_ORDER[userTier as keyof typeof TIER_ORDER] ?? 0
@@ -87,16 +92,49 @@ export default function CommunityView({ userId, userName, userTier, userRole }: 
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
 
+  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImageFile(file)
+    const url = URL.createObjectURL(file)
+    setImagePreview(url)
+  }
+
+  function clearImage() {
+    setImagePreview(null)
+    setImageFile(null)
+    if (fileInputRef.current) fileInputRef.current.value = ""
+  }
+
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault()
-    if (!input.trim() || sending) return
+    if ((!input.trim() && !imageFile) || sending) return
     setSending(true)
+
+    let uploadedUrl: string | null = null
+    if (imageFile) {
+      setUploading(true)
+      const fd = new FormData()
+      fd.append("file", imageFile)
+      const res = await fetch("/api/upload", { method: "POST", body: fd })
+      if (res.ok) {
+        const data = await res.json()
+        uploadedUrl = data.url
+      }
+      setUploading(false)
+    }
+
     await fetch("/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: input.trim(), room: activeRoom }),
+      body: JSON.stringify({
+        content: input.trim(),
+        room: activeRoom,
+        imageUrl: uploadedUrl,
+      }),
     })
     setInput("")
+    clearImage()
     setSending(false)
     fetchMessages()
   }
@@ -194,8 +232,43 @@ export default function CommunityView({ userId, userName, userTier, userRole }: 
               <div ref={bottomRef} />
             </div>
 
+            {/* Image preview */}
+            {imagePreview && (
+              <div className="px-3 pt-3 border-t border-white/10">
+                <div className="relative inline-block">
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
+                    className="max-h-32 rounded-lg object-cover border border-white/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={clearImage}
+                    className="absolute -top-2 -right-2 w-5 h-5 bg-black border border-white/20 rounded-full text-xs text-[#888] hover:text-white flex items-center justify-center"
+                  >
+                    ×
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Input */}
-            <form onSubmit={sendMessage} className="p-3 border-t border-white/10 flex gap-2">
+            <form onSubmit={sendMessage} className="p-3 border-t border-white/10 flex gap-2 items-center">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="text-[#888] hover:text-white transition-colors text-lg flex-shrink-0"
+                title="Upload image"
+              >
+                📷
+              </button>
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -204,10 +277,10 @@ export default function CommunityView({ userId, userName, userTier, userRole }: 
               />
               <button
                 type="submit"
-                disabled={!input.trim() || sending}
+                disabled={(!input.trim() && !imageFile) || sending}
                 className="bg-[#FF6B00] hover:bg-[#e05e00] disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
               >
-                Send
+                {uploading ? "Uploading..." : sending ? "Sending..." : "Send"}
               </button>
             </form>
           </>
@@ -232,9 +305,20 @@ function MessageItem({ msg, currentUserId }: { msg: Message; currentUserId: stri
           </span>
           <span className="text-xs text-[#555]">{formatTime(msg.createdAt)}</span>
         </div>
-        <div className={`text-sm rounded-xl px-3 py-2 ${isOwn ? "bg-[#FF6B00]/20 text-white" : "bg-white/10 text-white"}`}>
-          {msg.content}
-        </div>
+        {msg.content && (
+          <div className={`text-sm rounded-xl px-3 py-2 ${isOwn ? "bg-[#FF6B00]/20 text-white" : "bg-white/10 text-white"}`}>
+            {msg.content}
+          </div>
+        )}
+        {msg.imageUrl && (
+          <a href={msg.imageUrl} target="_blank" rel="noopener noreferrer">
+            <img
+              src={msg.imageUrl}
+              alt="Shared image"
+              className="max-h-[300px] rounded-xl object-cover cursor-pointer hover:opacity-90 transition-opacity border border-white/10"
+            />
+          </a>
+        )}
       </div>
     </div>
   )

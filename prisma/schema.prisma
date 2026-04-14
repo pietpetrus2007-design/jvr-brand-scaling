@@ -20,16 +20,17 @@ enum Room {
 }
 
 model User {
-  id          String      @id @default(cuid())
-  name        String
-  email       String      @unique
-  password    String
-  role        String      @default("student")
-  tier        Tier        @default(basic)
-  createdAt   DateTime    @default(now())
-  progress    Progress[]
-  messages    Message[]
-  inviteUsed  InviteCode? @relation("UsedBy")
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  password      String
+  role          String         @default("student")
+  tier          Tier           @default(basic)
+  createdAt     DateTime       @default(now())
+  progress      Progress[]
+  messages      Message[]
+  announcements Announcement[]
+  inviteUsed    InviteCode?    @relation("UsedBy")
 }
 
 model InviteCode {
@@ -78,8 +79,19 @@ model Message {
   id           String   @id @default(cuid())
   userId       String
   content      String
+  imageUrl     String?
   room         Room     @default(wins)
   targetUserId String?
   createdAt    DateTime @default(now())
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  imageUrl  String?
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

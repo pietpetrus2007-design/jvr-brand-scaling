@@ -50,8 +50,8 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-  const { content, room, targetUserId } = await req.json()
-  if (!content?.trim()) return NextResponse.json({ error: "Content required." }, { status: 400 })
+  const { content, room, targetUserId, imageUrl } = await req.json()
+  if (!content?.trim() && !imageUrl) return NextResponse.json({ error: "Content or image required." }, { status: 400 })
 
   const roomEnum = (room || "wins") as Room
   const userTier = (session.user as any).tier as keyof typeof TIER_ORDER
@@ -63,7 +63,8 @@ export async function POST(req: NextRequest) {
   const message = await prisma.message.create({
     data: {
       userId: session.user.id,
-      content: content.trim(),
+      content: content?.trim() || "",
+      imageUrl: imageUrl || null,
       room: roomEnum,
       targetUserId: roomEnum === "private" ? targetUserId : null,
     },

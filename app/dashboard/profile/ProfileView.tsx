@@ -1,12 +1,24 @@
 "use client"
 
 import { useState } from "react"
-import { UPGRADE_LINKS, TIER_ORDER } from "@/lib/utils"
+import { UPGRADE_LINKS } from "@/lib/utils"
 
-const TIER_COLORS: Record<string, string> = {
-  basic: "bg-white/10 text-white border-white/20",
-  community: "bg-blue-500/10 text-blue-400 border-blue-500/30",
-  mentorship: "bg-[#FF6B00]/10 text-[#FF6B00] border-[#FF6B00]/30",
+const TIER_STYLES: Record<string, { badge: string; label: string; glow: string }> = {
+  basic: {
+    badge: "bg-white/10 text-white border-white/20",
+    label: "Basic",
+    glow: "",
+  },
+  community: {
+    badge: "bg-blue-500/15 text-blue-400 border-blue-500/30",
+    label: "Community",
+    glow: "shadow-[0_0_30px_rgba(59,130,246,0.15)]",
+  },
+  mentorship: {
+    badge: "bg-[#FF6B00]/15 text-[#FF6B00] border-[#FF6B00]/30",
+    label: "Mentorship",
+    glow: "shadow-[0_0_30px_rgba(255,107,0,0.2)]",
+  },
 }
 
 interface Props {
@@ -45,58 +57,84 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
     }
   }
 
+  const tierStyle = TIER_STYLES[currentTier] || TIER_STYLES.basic
   const upgradeLinks = UPGRADE_LINKS[currentTier] || {}
+  const initials = name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12 space-y-8">
-      <h1 className="text-2xl font-bold text-white">Your Profile</h1>
+    <div className="max-w-2xl mx-auto px-4 py-12 space-y-6">
+      <h1 className="text-3xl font-bold text-white">Your Profile</h1>
 
-      {/* User info */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-white font-semibold text-lg">{name}</h2>
-            <p className="text-[#888] text-sm">{email}</p>
+      {/* User info card */}
+      <div className={`bg-[#0a0a0a] border border-white/8 rounded-2xl p-6 ${tierStyle.glow}`}>
+        <div className="flex items-start gap-4">
+          <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center text-xl font-bold flex-shrink-0 ${tierStyle.badge}`}>
+            {initials}
           </div>
-          <span className={`px-3 py-1 rounded-full text-sm font-semibold border capitalize ${TIER_COLORS[currentTier] || TIER_COLORS.basic}`}>
-            {currentTier}
-          </span>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-white font-bold text-xl">{name}</h2>
+              <span className={`text-sm px-3 py-1 rounded-full font-bold border capitalize ${tierStyle.badge}`}>
+                {tierStyle.label}
+              </span>
+            </div>
+            <p className="text-[#888] text-sm mt-1">{email}</p>
+          </div>
         </div>
-        <div className="flex items-center gap-6 pt-2 border-t border-white/10">
-          <div>
-            <p className="text-2xl font-bold text-white">{completedLessons}</p>
-            <p className="text-xs text-[#888]">Lessons Completed</p>
+
+        <div className="mt-6 pt-5 border-t border-white/8 grid grid-cols-2 gap-4">
+          <div className="bg-white/5 rounded-xl p-4">
+            <p className="text-3xl font-bold text-[#FF6B00]">{completedLessons}</p>
+            <p className="text-xs text-[#888] mt-1">Lessons Completed</p>
+          </div>
+          <div className="bg-white/5 rounded-xl p-4">
+            <p className="text-3xl font-bold text-white capitalize">{currentTier}</p>
+            <p className="text-xs text-[#888] mt-1">Current Tier</p>
           </div>
         </div>
       </div>
 
-      {/* Upgrade via code */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
-        <h2 className="text-white font-semibold">Have an Upgrade Code?</h2>
+      {/* Upgrade code */}
+      <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-6 space-y-4">
+        <div>
+          <h2 className="text-white font-bold text-lg">Have an Upgrade Code?</h2>
+          <p className="text-[#888] text-sm mt-1">Apply a code to instantly upgrade your tier</p>
+        </div>
         <form onSubmit={handleUpgrade} className="flex gap-3">
           <input
             type="text"
             value={upgradeCode}
             onChange={(e) => setUpgradeCode(e.target.value.toUpperCase())}
-            placeholder="Enter code"
-            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#FF6B00] transition-colors font-mono"
+            placeholder="Enter upgrade code"
+            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#FF6B00] focus:shadow-[0_0_0_3px_rgba(255,107,0,0.1)] transition-all duration-150 font-mono tracking-wider"
           />
           <button
             type="submit"
             disabled={!upgradeCode.trim() || upgrading}
-            className="bg-[#FF6B00] hover:bg-[#e05e00] disabled:opacity-50 text-white font-semibold px-5 py-2 rounded-lg text-sm transition-colors"
+            className="bg-[#FF6B00] hover:bg-[#e05e00] disabled:opacity-50 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors duration-150"
           >
             {upgrading ? "..." : "Apply"}
           </button>
         </form>
-        {upgradeMsg && <p className="text-green-400 text-sm">{upgradeMsg}</p>}
-        {upgradeError && <p className="text-red-400 text-sm">{upgradeError}</p>}
+        {upgradeMsg && (
+          <p className="text-green-400 text-sm flex items-center gap-2">
+            <span>✅</span> {upgradeMsg}
+          </p>
+        )}
+        {upgradeError && (
+          <p className="text-red-400 text-sm flex items-center gap-2">
+            <span>⚠️</span> {upgradeError}
+          </p>
+        )}
       </div>
 
       {/* Upgrade purchase links */}
       {Object.keys(upgradeLinks).length > 0 && (
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
-          <h2 className="text-white font-semibold">Upgrade Your Access</h2>
+        <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-6 space-y-4">
+          <div>
+            <h2 className="text-white font-bold text-lg">Upgrade Your Access</h2>
+            <p className="text-[#888] text-sm mt-1">Unlock more rooms, features, and direct access</p>
+          </div>
           <div className="space-y-3">
             {Object.entries(upgradeLinks).map(([targetTier, link]) => (
               <a
@@ -104,13 +142,13 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
                 href={link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl p-4 transition-colors group"
+                className="flex items-center justify-between bg-white/5 hover:bg-[#FF6B00]/8 border border-white/8 hover:border-[#FF6B00]/30 rounded-xl p-4 transition-all duration-150 group"
               >
                 <div>
-                  <p className="text-white font-semibold capitalize">{targetTier} Tier</p>
-                  <p className="text-[#888] text-sm">Unlock more rooms and features</p>
+                  <p className="text-white font-bold capitalize">{targetTier} Tier</p>
+                  <p className="text-[#888] text-sm mt-0.5">Unlock more rooms and features</p>
                 </div>
-                <span className="text-[#FF6B00] group-hover:translate-x-1 transition-transform">→</span>
+                <span className="text-[#FF6B00] group-hover:translate-x-1 transition-transform duration-150 text-lg">→</span>
               </a>
             ))}
           </div>

@@ -58,6 +58,7 @@ model Lesson {
   title       String
   description String
   videoUrl    String     @default("")
+  slideUrl    String     @default("")
   order       Int
   createdAt   DateTime   @default(now())
   module      Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)

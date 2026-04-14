@@ -147,7 +147,7 @@ export default function CourseView({ modules, completedIds: initial, userId }: P
                 <p className="text-white font-semibold text-sm">📄 Lesson Slides</p>
                 <div className="rounded-2xl overflow-hidden border-2 border-[#FF6B00]">
                   <iframe
-                    src={`https://docs.google.com/viewer?url=${encodeURIComponent(selectedLesson.slideUrl)}&embedded=true`}
+                    src={selectedLesson.slideUrl}
                     title="Lesson Slides"
                     className="w-full h-[300px] lg:h-[500px]"
                   />

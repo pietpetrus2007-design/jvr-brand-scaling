@@ -308,8 +308,9 @@ export default function CommunityView({ userId, userName, userTier, userRole }: 
 
 function MessageItem({ msg, currentUserId }: { msg: Message; currentUserId: string }) {
   const isOwn = msg.user.id === currentUserId
-  const avatarStyle = AVATAR_COLORS[msg.user.tier] || AVATAR_COLORS.basic
-  const badgeStyle = TIER_BADGE[msg.user.tier] || TIER_BADGE.basic
+  const isAdmin = msg.user.role === 'admin'
+  const avatarStyle = isAdmin ? 'bg-red-500/20 border-red-500/50 text-red-400' : (AVATAR_COLORS[msg.user.tier] || AVATAR_COLORS.basic)
+  const badgeStyle = isAdmin ? 'bg-red-500/20 text-red-400 border border-red-500/30' : (TIER_BADGE[msg.user.tier] || TIER_BADGE.basic)
 
   return (
     <div className={`flex gap-3 ${isOwn ? "flex-row-reverse" : ""}`}>
@@ -319,10 +320,8 @@ function MessageItem({ msg, currentUserId }: { msg: Message; currentUserId: stri
       <div className={`max-w-[72%] space-y-1.5 ${isOwn ? "items-end flex flex-col" : ""}`}>
         <div className={`flex items-center gap-2 ${isOwn ? "flex-row-reverse" : ""}`}>
           <span className="text-xs text-white font-semibold">{msg.user.name}</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${
-            msg.user.role === 'admin' ? 'bg-[#FF6B00]/20 text-[#FF6B00] border border-[#FF6B00]/30' : badgeStyle
-          }`}>
-            {msg.user.role === 'admin' ? 'Admin' : msg.user.tier}
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${badgeStyle}`}>
+            {isAdmin ? 'Admin' : msg.user.tier}
           </span>
           <span className="text-xs text-[#444]">{formatTime(msg.createdAt)}</span>
         </div>

@@ -107,7 +107,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
             <div className="mb-3">
               <div className="flex items-center justify-between">
                 <span className="text-white font-bold text-sm">Basic</span>
-                <span className="text-[#888] text-xs">R2,999</span>
+
               </div>
               {currentTier === 'basic' && <span className="inline-block mt-1 text-xs bg-white/20 text-white px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
             </div>
@@ -128,7 +128,9 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
             <div className="mb-3">
               <div className="flex items-center justify-between">
                 <span className="text-blue-400 font-bold text-sm">Community</span>
-                <span className="text-[#888] text-xs">R4,999</span>
+{TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['community'] && (
+                  <span className="text-[#FF6B00] text-xs font-semibold">+R2,000 to upgrade</span>
+                )}
               </div>
               {currentTier === 'community' && <span className="inline-block mt-1 text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
             </div>
@@ -155,7 +157,11 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
             <div className="mb-3">
               <div className="flex items-center justify-between">
                 <span className="text-[#FF6B00] font-bold text-sm">Mentorship</span>
-                <span className="text-[#888] text-xs">R8,999</span>
+{TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['mentorship'] && (
+                  <span className="text-[#FF6B00] text-xs font-semibold">
+                    {currentTier === 'basic' ? '+R6,000 to upgrade' : '+R4,000 to upgrade'}
+                  </span>
+                )}
               </div>
               {currentTier === 'mentorship' && <span className="inline-block mt-1 text-xs bg-[#FF6B00]/20 text-[#FF6B00] px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
             </div>

@@ -104,10 +104,12 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               ? 'border-white/40 bg-white/8 ring-1 ring-white/20'
               : 'border-white/8 bg-white/3 opacity-60'
           }`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-white font-bold text-sm">Basic</span>
-              {currentTier === 'basic' && <span className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
-              <span className="text-[#888] text-xs">R2,999</span>
+            <div className="mb-3">
+              <div className="flex items-center justify-between">
+                <span className="text-white font-bold text-sm">Basic</span>
+                <span className="text-[#888] text-xs">R2,999</span>
+              </div>
+              {currentTier === 'basic' && <span className="inline-block mt-1 text-xs bg-white/20 text-white px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
             </div>
             <ul className="space-y-1.5 text-xs text-[#888]">
               <li className="flex items-center gap-1.5"><span className="text-white">✓</span> Full course access</li>
@@ -123,10 +125,12 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               ? 'border-blue-500/50 bg-blue-500/8 ring-1 ring-blue-500/20'
               : 'border-white/8 bg-white/3 opacity-60'
           }`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-blue-400 font-bold text-sm">Community</span>
-              {currentTier === 'community' && <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
-              <span className="text-[#888] text-xs">R4,999</span>
+            <div className="mb-3">
+              <div className="flex items-center justify-between">
+                <span className="text-blue-400 font-bold text-sm">Community</span>
+                <span className="text-[#888] text-xs">R4,999</span>
+              </div>
+              {currentTier === 'community' && <span className="inline-block mt-1 text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
             </div>
             <ul className="space-y-1.5 text-xs text-[#888]">
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Everything in Basic</li>
@@ -142,10 +146,12 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               ? 'border-[#FF6B00]/50 bg-[#FF6B00]/8 ring-1 ring-[#FF6B00]/20'
               : 'border-white/8 bg-white/3 opacity-60'
           }`}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[#FF6B00] font-bold text-sm">Mentorship</span>
-              {currentTier === 'mentorship' && <span className="text-xs bg-[#FF6B00]/20 text-[#FF6B00] px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
-              <span className="text-[#888] text-xs">R8,999</span>
+            <div className="mb-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[#FF6B00] font-bold text-sm">Mentorship</span>
+                <span className="text-[#888] text-xs">R8,999</span>
+              </div>
+              {currentTier === 'mentorship' && <span className="inline-block mt-1 text-xs bg-[#FF6B00]/20 text-[#FF6B00] px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
             </div>
             <ul className="space-y-1.5 text-xs text-[#888]">
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Everything in Community</li>

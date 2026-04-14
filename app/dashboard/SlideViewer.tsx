@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface Props {
   publicId: string
@@ -10,6 +10,9 @@ const CLOUD = "https://res.cloudinary.com/dwnfccsje/image/upload"
 
 export default function SlideViewer({ publicId, pages }: Props) {
   const [current, setCurrent] = useState(1)
+
+  // Reset to slide 1 when lesson changes
+  useEffect(() => { setCurrent(1) }, [publicId])
 
   if (!publicId || pages === 0) return null
 

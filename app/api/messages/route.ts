@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
 
   const messages = await prisma.message.findMany({
     where,
-    include: { user: { select: { id: true, name: true, tier: true } } },
+    include: { user: { select: { id: true, name: true, tier: true, role: true } } },
     orderBy: { createdAt: "asc" },
     take: 100,
   })
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       room: roomEnum,
       targetUserId: roomEnum === "private" ? targetUserId : null,
     },
-    include: { user: { select: { id: true, name: true, tier: true } } },
+    include: { user: { select: { id: true, name: true, tier: true, role: true } } },
   })
 
   return NextResponse.json(message)

@@ -59,10 +59,22 @@ model Lesson {
   description String
   videoUrl    String     @default("")
   slideUrl    String     @default("")
+  slidePages  Int        @default(0)
   order       Int
   createdAt   DateTime   @default(now())
   module      Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   progress    Progress[]
+  resources   Resource[]
+}
+
+model Resource {
+  id        String   @id @default(cuid())
+  lessonId  String
+  label     String
+  url       String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 }
 
 model Progress {

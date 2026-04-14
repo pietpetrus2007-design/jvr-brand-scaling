@@ -12,7 +12,12 @@ export default async function DashboardPage() {
 
   const [modules, progressRecords] = await Promise.all([
     prisma.module.findMany({
-      include: { lessons: { orderBy: { order: "asc" } } },
+      include: {
+        lessons: {
+          orderBy: { order: "asc" },
+          include: { resources: { orderBy: { order: "asc" }, select: { id: true, label: true, url: true, order: true } } },
+        },
+      },
       orderBy: { order: "asc" },
     }),
     prisma.progress.findMany({ where: { userId }, select: { lessonId: true } }),

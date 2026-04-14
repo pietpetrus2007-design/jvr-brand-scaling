@@ -10,7 +10,12 @@ export default async function AdminPage() {
 
   const [modules, codes, stats, announcements] = await Promise.all([
     prisma.module.findMany({
-      include: { lessons: { orderBy: { order: "asc" } } },
+      include: {
+        lessons: {
+          orderBy: { order: "asc" },
+          include: { resources: { orderBy: { order: "asc" } } },
+        },
+      },
       orderBy: { order: "asc" },
     }),
     prisma.inviteCode.findMany({

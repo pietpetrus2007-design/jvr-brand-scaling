@@ -1,6 +1,14 @@
 "use client"
 
 import { useState } from "react"
+import SlideViewer from "./SlideViewer"
+
+interface Resource {
+  id: string
+  label: string
+  url: string
+  order: number
+}
 
 interface Lesson {
   id: string
@@ -8,7 +16,9 @@ interface Lesson {
   description: string
   videoUrl: string
   slideUrl: string
+  slidePages: number
   order: number
+  resources: Resource[]
 }
 
 interface Module {
@@ -155,36 +165,11 @@ export default function CourseView({ modules, completedIds: initial, userId }: P
             >
               ← Back to Course
             </button>
-            {/* PDF Slides */}
-            {selectedLesson.slideUrl && (
+            {/* Slide Viewer */}
+            {selectedLesson.slideUrl && selectedLesson.slidePages > 0 && (
               <div className="space-y-2">
                 <p className="text-white font-semibold text-sm">📄 Lesson Slides</p>
-                {/* Desktop: embed viewer */}
-                <div className="hidden lg:block rounded-lg overflow-hidden" style={{ height: '620px', background: '#fff' }}>
-                  <iframe
-                    src={`${selectedLesson.slideUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
-                    title="Lesson Slides"
-                    style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-                  />
-                </div>
-                {/* Mobile: download button only */}
-                <a
-                  href={selectedLesson.slideUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="lg:hidden flex items-center justify-center gap-2 w-full bg-[#FF6B00] hover:bg-[#e05e00] text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-150"
-                >
-                  📄 Open Slides
-                </a>
-                {/* Desktop download link */}
-                <a
-                  href={selectedLesson.slideUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hidden lg:inline-flex items-center gap-1.5 text-xs text-[#FF6B00] hover:text-[#e05e00] transition-colors duration-150"
-                >
-                  Download Slides
-                </a>
+                <SlideViewer publicId={selectedLesson.slideUrl} pages={selectedLesson.slidePages} />
               </div>
             )}
 
@@ -208,6 +193,26 @@ export default function CourseView({ modules, completedIds: initial, userId }: P
                 </div>
               </div>
             ) : null}
+
+            {/* Resources */}
+            {selectedLesson.resources && selectedLesson.resources.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-white font-semibold text-sm">🔗 Resources</p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedLesson.resources.map((r) => (
+                    <a
+                      key={r.id}
+                      href={r.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#111] border border-[#FF6B00]/30 text-[#FF6B00] rounded-lg text-sm hover:bg-[#FF6B00]/10 transition-colors"
+                    >
+                      {r.label} →
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Lesson info */}
             <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-6 space-y-4">

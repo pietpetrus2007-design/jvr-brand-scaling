@@ -12,10 +12,10 @@ async function requireAdmin() {
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ lessonId: string }> }) {
   if (!await requireAdmin()) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   const { lessonId } = await params
-  const { title, description, videoUrl, slideUrl, order } = await req.json()
+  const { title, description, videoUrl, slideUrl, slidePages, order } = await req.json()
   const lesson = await prisma.lesson.update({
     where: { id: lessonId },
-    data: { title, description, videoUrl, slideUrl, order },
+    data: { title, description, videoUrl, slideUrl, slidePages, order },
   })
   return NextResponse.json(lesson)
 }

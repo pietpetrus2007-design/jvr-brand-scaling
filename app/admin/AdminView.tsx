@@ -3,7 +3,8 @@
 import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 
-interface Lesson { id: string; title: string; description: string; videoUrl: string; slideUrl: string; order: number }
+interface Resource { id: string; label: string; url: string; order: number }
+interface Lesson { id: string; title: string; description: string; videoUrl: string; slideUrl: string; slidePages: number; order: number; resources: Resource[] }
 interface Module { id: string; title: string; description: string; order: number; lessons: Lesson[] }
 interface InviteCode { id: string; code: string; tier: string; usedAt: string | null; usedBy: { name: string; email: string } | null }
 interface Student { id: string; name: string; email: string; tier: string; createdAt: string; _count: { progress: number } }
@@ -40,7 +41,8 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
 
   const [newMod, setNewMod] = useState({ title: "", description: "", order: "" })
   const [addingMod, setAddingMod] = useState(false)
-  const [lessonForms, setLessonForms] = useState<Record<string, { title: string; description: string; videoUrl: string; slideUrl: string; order: string }>>({})
+  const [lessonForms, setLessonForms] = useState<Record<string, { title: string; description: string; videoUrl: string; slideUrl: string; slidePages: string; order: string }>>({})
+  const [resourceForms, setResourceForms] = useState<Record<string, { label: string; url: string }>>({})
   const [codeGen, setCodeGen] = useState({ tier: "basic", quantity: "1" })
   const [generating, setGenerating] = useState(false)
 
@@ -69,13 +71,43 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
     const res = await fetch(`/api/admin/modules/${moduleId}/lessons`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, order: Number(form.order) || 0 }),
+      body: JSON.stringify({ ...form, order: Number(form.order) || 0, slidePages: Number(form.slidePages) || 0 }),
     })
     const lesson = await res.json()
     setModules((prev) =>
-      prev.map((m) => m.id === moduleId ? { ...m, lessons: [...m.lessons, lesson] } : m)
+      prev.map((m) => m.id === moduleId ? { ...m, lessons: [...m.lessons, { ...lesson, resources: [] }] } : m)
     )
-    setLessonForms((prev) => ({ ...prev, [moduleId]: { title: "", description: "", videoUrl: "", slideUrl: "", order: "" } }))
+    setLessonForms((prev) => ({ ...prev, [moduleId]: { title: "", description: "", videoUrl: "", slideUrl: "", slidePages: "", order: "" } }))
+  }
+
+  async function addResource(lessonId: string, moduleId: string) {
+    const form = resourceForms[lessonId]
+    if (!form?.label || !form?.url) return
+    const res = await fetch("/api/resources", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lessonId, label: form.label, url: form.url }),
+    })
+    const resource = await res.json()
+    setModules((prev) =>
+      prev.map((m) =>
+        m.id === moduleId
+          ? { ...m, lessons: m.lessons.map((l) => l.id === lessonId ? { ...l, resources: [...l.resources, resource] } : l) }
+          : m
+      )
+    )
+    setResourceForms((prev) => ({ ...prev, [lessonId]: { label: "", url: "" } }))
+  }
+
+  async function deleteResource(lessonId: string, moduleId: string, resourceId: string) {
+    await fetch(`/api/resources/${resourceId}`, { method: "DELETE" })
+    setModules((prev) =>
+      prev.map((m) =>
+        m.id === moduleId
+          ? { ...m, lessons: m.lessons.map((l) => l.id === lessonId ? { ...l, resources: l.resources.filter((r) => r.id !== resourceId) } : l) }
+          : m
+      )
+    )
   }
 
   async function deleteLesson(moduleId: string, lessonId: string) {
@@ -200,7 +232,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
           </div>
 
           {modules.map((mod) => {
-            const lf = lessonForms[mod.id] || { title: "", description: "", videoUrl: "", slideUrl: "", order: "" }
+            const lf = lessonForms[mod.id] || { title: "", description: "", videoUrl: "", slideUrl: "", slidePages: "", order: "" }
             return (
               <div key={mod.id} className="bg-[#0a0a0a] border border-white/8 rounded-2xl overflow-hidden border-l-2 border-l-[#FF6B00]/40">
                 <div className="px-5 py-4 flex items-center justify-between border-b border-white/8">
@@ -214,20 +246,61 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
                   </button>
                 </div>
                 <div className="divide-y divide-white/5">
-                  {mod.lessons.map((lesson) => (
-                    <div key={lesson.id} className="px-5 py-3 flex items-center justify-between hover:bg-white/3 transition-colors duration-150">
-                      <div>
-                        <p className="text-white text-sm font-semibold">{lesson.title}</p>
-                        {lesson.description && <p className="text-[#888] text-xs mt-0.5">{lesson.description}</p>}
-                        {lesson.videoUrl && <p className="text-[#555] text-xs mt-0.5 truncate max-w-xs">{lesson.videoUrl}</p>}
-                        {lesson.slideUrl && <p className="text-[#FF6B00]/50 text-xs mt-0.5 truncate max-w-xs">📄 {lesson.slideUrl}</p>}
+                  {mod.lessons.map((lesson) => {
+                    const rf = resourceForms[lesson.id] || { label: "", url: "" }
+                    return (
+                      <div key={lesson.id} className="px-5 py-3 hover:bg-white/3 transition-colors duration-150">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-white text-sm font-semibold">{lesson.title}</p>
+                            {lesson.description && <p className="text-[#888] text-xs mt-0.5">{lesson.description}</p>}
+                            {lesson.videoUrl && <p className="text-[#555] text-xs mt-0.5 truncate max-w-xs">{lesson.videoUrl}</p>}
+                            {lesson.slideUrl && <p className="text-[#FF6B00]/50 text-xs mt-0.5">📄 {lesson.slideUrl} ({lesson.slidePages} slides)</p>}
+                          </div>
+                          <button onClick={() => deleteLesson(mod.id, lesson.id)}
+                            className="text-red-400 hover:text-red-300 text-xs ml-4 flex-shrink-0 transition-colors duration-150">
+                            Delete
+                          </button>
+                        </div>
+                        {/* Resources */}
+                        <div className="mt-2 space-y-1">
+                          {lesson.resources.map((r) => (
+                            <div key={r.id} className="flex items-center gap-2 text-xs">
+                              <span className="text-[#FF6B00]">{r.label}</span>
+                              <span className="text-[#555] truncate max-w-xs">{r.url}</span>
+                              <button
+                                onClick={() => deleteResource(lesson.id, mod.id, r.id)}
+                                className="text-red-400 hover:text-red-300 ml-auto flex-shrink-0"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                          <div className="flex gap-2 mt-1.5">
+                            <input
+                              value={rf.label}
+                              onChange={(e) => setResourceForms((p) => ({ ...p, [lesson.id]: { ...rf, label: e.target.value } }))}
+                              placeholder="Resource label"
+                              className="flex-1 bg-white/5 border border-white/8 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-[#FF6B00]"
+                            />
+                            <input
+                              value={rf.url}
+                              onChange={(e) => setResourceForms((p) => ({ ...p, [lesson.id]: { ...rf, url: e.target.value } }))}
+                              placeholder="URL"
+                              className="flex-1 bg-white/5 border border-white/8 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-[#FF6B00]"
+                            />
+                            <button
+                              onClick={() => addResource(lesson.id, mod.id)}
+                              disabled={!rf.label || !rf.url}
+                              className="text-xs text-[#FF6B00] border border-[#FF6B00]/30 rounded-lg px-3 py-1 hover:bg-[#FF6B00]/10 disabled:opacity-30 transition-colors"
+                            >
+                              + Add
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <button onClick={() => deleteLesson(mod.id, lesson.id)}
-                        className="text-red-400 hover:text-red-300 text-xs ml-4 transition-colors duration-150">
-                        Delete
-                      </button>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
                 <div className="px-5 py-4 border-t border-white/8 bg-white/2">
                   <p className="text-xs text-[#555] mb-3 font-bold uppercase tracking-wider">Add Lesson</p>
@@ -239,7 +312,9 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
                     <input value={lf.videoUrl} onChange={(e) => setLessonForms((p) => ({ ...p, [mod.id]: { ...lf, videoUrl: e.target.value } }))}
                       placeholder="Video URL (YouTube/Vimeo)" className={inputCls} />
                     <input value={lf.slideUrl} onChange={(e) => setLessonForms((p) => ({ ...p, [mod.id]: { ...lf, slideUrl: e.target.value } }))}
-                      placeholder="Slide URL (Cloudinary PDF)" className={inputCls} />
+                      placeholder="Cloudinary Slide ID (e.g. mod1-lesson1)" className={inputCls} />
+                    <input value={lf.slidePages} onChange={(e) => setLessonForms((p) => ({ ...p, [mod.id]: { ...lf, slidePages: e.target.value } }))}
+                      placeholder="Number of slides" type="number" className={inputCls} />
                     <div className="flex gap-2">
                       <input value={lf.order} onChange={(e) => setLessonForms((p) => ({ ...p, [mod.id]: { ...lf, order: e.target.value } }))}
                         placeholder="Order" type="number" className={`w-20 ${inputCls}`} />

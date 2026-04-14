@@ -38,6 +38,13 @@ export default function CourseView({ modules, completedIds: initial, userId }: P
   const [completedIds, setCompletedIds] = useState(new Set(initial))
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null)
   const [completing, setCompleting] = useState(false)
+  const [mobileView, setMobileView] = useState<'list' | 'lesson'>('list')
+
+  function handleLessonClick(lesson: Lesson) {
+    setSelectedLesson(lesson)
+    setMobileView('lesson')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   async function markComplete(lessonId: string) {
     if (completedIds.has(lessonId)) return
@@ -56,7 +63,7 @@ export default function CourseView({ modules, completedIds: initial, userId }: P
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
       {/* Sidebar */}
-      <aside className="lg:w-72 flex-shrink-0 space-y-4">
+      <aside className={`lg:w-72 flex-shrink-0 space-y-4 ${mobileView === 'lesson' ? 'hidden lg:block' : 'block'}`}>
         <div>
           <h2 className="text-lg font-bold text-white">Course Content</h2>
           {totalLessons > 0 && (
@@ -109,7 +116,7 @@ export default function CourseView({ modules, completedIds: initial, userId }: P
                   return (
                     <button
                       key={lesson.id}
-                      onClick={() => setSelectedLesson(lesson)}
+                      onClick={() => handleLessonClick(lesson)}
                       className={`w-full text-left px-4 py-3 flex items-center gap-3 text-sm transition-all duration-150 border-b border-white/5 last:border-0 ${
                         isSelected
                           ? "bg-[#FF6B00]/12 text-white"
@@ -138,9 +145,16 @@ export default function CourseView({ modules, completedIds: initial, userId }: P
       </aside>
 
       {/* Main area */}
-      <div className="flex-1 min-w-0">
+      <div className={`flex-1 min-w-0 ${mobileView === 'list' ? 'hidden lg:block' : 'block'}`}>
         {selectedLesson ? (
           <div className="space-y-6">
+            {/* Back button (mobile only) */}
+            <button
+              onClick={() => setMobileView('list')}
+              className="lg:hidden flex items-center gap-1.5 text-sm font-semibold text-[#FF6B00] hover:text-[#e05e00] transition-colors duration-150"
+            >
+              ← Back to Course
+            </button>
             {/* PDF Slides */}
             {selectedLesson.slideUrl && (
               <div className="space-y-2">

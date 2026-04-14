@@ -145,11 +145,11 @@ export default function CourseView({ modules, completedIds: initial, userId }: P
             {selectedLesson.slideUrl && (
               <div className="space-y-2">
                 <p className="text-white font-semibold text-sm">📄 Lesson Slides</p>
-                <div className="rounded-2xl overflow-hidden border-2 border-[#FF6B00]">
+                <div className="rounded-lg overflow-hidden border border-[#FF6B00]/30" style={{ height: '620px' }}>
                   <iframe
                     src={selectedLesson.slideUrl}
                     title="Lesson Slides"
-                    className="w-full h-[300px] lg:h-[500px]"
+                    style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
                   />
                 </div>
                 <a

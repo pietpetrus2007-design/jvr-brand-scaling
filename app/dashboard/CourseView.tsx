@@ -162,7 +162,7 @@ export default function CourseView({ modules, completedIds: initial, userId }: P
                 {/* Desktop: embed viewer */}
                 <div className="hidden lg:block rounded-lg overflow-hidden" style={{ height: '620px', background: '#fff' }}>
                   <iframe
-                    src={selectedLesson.slideUrl}
+                    src={`${selectedLesson.slideUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
                     title="Lesson Slides"
                     style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
                   />

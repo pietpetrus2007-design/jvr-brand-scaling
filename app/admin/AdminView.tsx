@@ -3,7 +3,7 @@
 import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 
-interface Lesson { id: string; title: string; description: string; videoUrl: string; order: number }
+interface Lesson { id: string; title: string; description: string; videoUrl: string; slideUrl: string; order: number }
 interface Module { id: string; title: string; description: string; order: number; lessons: Lesson[] }
 interface InviteCode { id: string; code: string; tier: string; usedAt: string | null; usedBy: { name: string; email: string } | null }
 interface Student { id: string; name: string; email: string; tier: string; createdAt: string; _count: { progress: number } }
@@ -40,7 +40,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
 
   const [newMod, setNewMod] = useState({ title: "", description: "", order: "" })
   const [addingMod, setAddingMod] = useState(false)
-  const [lessonForms, setLessonForms] = useState<Record<string, { title: string; description: string; videoUrl: string; order: string }>>({})
+  const [lessonForms, setLessonForms] = useState<Record<string, { title: string; description: string; videoUrl: string; slideUrl: string; order: string }>>({})
   const [codeGen, setCodeGen] = useState({ tier: "basic", quantity: "1" })
   const [generating, setGenerating] = useState(false)
 
@@ -75,7 +75,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
     setModules((prev) =>
       prev.map((m) => m.id === moduleId ? { ...m, lessons: [...m.lessons, lesson] } : m)
     )
-    setLessonForms((prev) => ({ ...prev, [moduleId]: { title: "", description: "", videoUrl: "", order: "" } }))
+    setLessonForms((prev) => ({ ...prev, [moduleId]: { title: "", description: "", videoUrl: "", slideUrl: "", order: "" } }))
   }
 
   async function deleteLesson(moduleId: string, lessonId: string) {
@@ -200,7 +200,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
           </div>
 
           {modules.map((mod) => {
-            const lf = lessonForms[mod.id] || { title: "", description: "", videoUrl: "", order: "" }
+            const lf = lessonForms[mod.id] || { title: "", description: "", videoUrl: "", slideUrl: "", order: "" }
             return (
               <div key={mod.id} className="bg-[#0a0a0a] border border-white/8 rounded-2xl overflow-hidden border-l-2 border-l-[#FF6B00]/40">
                 <div className="px-5 py-4 flex items-center justify-between border-b border-white/8">
@@ -220,6 +220,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
                         <p className="text-white text-sm font-semibold">{lesson.title}</p>
                         {lesson.description && <p className="text-[#888] text-xs mt-0.5">{lesson.description}</p>}
                         {lesson.videoUrl && <p className="text-[#555] text-xs mt-0.5 truncate max-w-xs">{lesson.videoUrl}</p>}
+                        {lesson.slideUrl && <p className="text-[#FF6B00]/50 text-xs mt-0.5 truncate max-w-xs">📄 {lesson.slideUrl}</p>}
                       </div>
                       <button onClick={() => deleteLesson(mod.id, lesson.id)}
                         className="text-red-400 hover:text-red-300 text-xs ml-4 transition-colors duration-150">
@@ -237,6 +238,8 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
                       placeholder="Description" className={inputCls} />
                     <input value={lf.videoUrl} onChange={(e) => setLessonForms((p) => ({ ...p, [mod.id]: { ...lf, videoUrl: e.target.value } }))}
                       placeholder="Video URL (YouTube/Vimeo)" className={inputCls} />
+                    <input value={lf.slideUrl} onChange={(e) => setLessonForms((p) => ({ ...p, [mod.id]: { ...lf, slideUrl: e.target.value } }))}
+                      placeholder="Slide URL (Cloudinary PDF)" className={inputCls} />
                     <div className="flex gap-2">
                       <input value={lf.order} onChange={(e) => setLessonForms((p) => ({ ...p, [mod.id]: { ...lf, order: e.target.value } }))}
                         placeholder="Order" type="number" className={`w-20 ${inputCls}`} />

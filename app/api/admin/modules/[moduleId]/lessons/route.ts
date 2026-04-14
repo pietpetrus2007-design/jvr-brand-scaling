@@ -12,9 +12,9 @@ async function requireAdmin() {
 export async function POST(req: NextRequest, { params }: { params: Promise<{ moduleId: string }> }) {
   if (!await requireAdmin()) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   const { moduleId } = await params
-  const { title, description, videoUrl, order } = await req.json()
+  const { title, description, videoUrl, slideUrl, order } = await req.json()
   const lesson = await prisma.lesson.create({
-    data: { moduleId, title, description, videoUrl: videoUrl || "", order: order || 0 },
+    data: { moduleId, title, description, videoUrl: videoUrl || "", slideUrl: slideUrl || "", order: order || 0 },
   })
   return NextResponse.json(lesson)
 }

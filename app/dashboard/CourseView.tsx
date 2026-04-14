@@ -7,6 +7,7 @@ interface Lesson {
   title: string
   description: string
   videoUrl: string
+  slideUrl: string
   order: number
 }
 
@@ -46,7 +47,7 @@ export default function CourseView({ modules, completedIds: initial, userId }: P
     setCompleting(false)
   }
 
-  const embedUrl = selectedLesson ? getEmbedUrl(selectedLesson.videoUrl) : null
+  const embedUrl = selectedLesson?.videoUrl ? getEmbedUrl(selectedLesson.videoUrl) : null
 
   const totalLessons = modules.reduce((acc, m) => acc + m.lessons.length, 0)
   const totalDone = modules.reduce((acc, m) => acc + m.lessons.filter((l) => completedIds.has(l.id)).length, 0)
@@ -140,6 +141,28 @@ export default function CourseView({ modules, completedIds: initial, userId }: P
       <div className="flex-1 min-w-0">
         {selectedLesson ? (
           <div className="space-y-6">
+            {/* PDF Slides */}
+            {selectedLesson.slideUrl && (
+              <div className="space-y-2">
+                <p className="text-white font-semibold text-sm">📄 Lesson Slides</p>
+                <div className="rounded-2xl overflow-hidden border-2 border-[#FF6B00]">
+                  <iframe
+                    src={`${selectedLesson.slideUrl}#toolbar=0&navpanes=0`}
+                    title="Lesson Slides"
+                    className="w-full h-[300px] lg:h-[500px]"
+                  />
+                </div>
+                <a
+                  href={selectedLesson.slideUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs text-[#FF6B00] hover:text-[#e05e00] transition-colors duration-150"
+                >
+                  Download Slides
+                </a>
+              </div>
+            )}
+
             {/* Video player */}
             {embedUrl ? (
               <div className="relative w-full aspect-video bg-[#0a0a0a] rounded-2xl overflow-hidden border border-white/8 shadow-[0_0_60px_rgba(0,0,0,0.8)]">
@@ -150,16 +173,16 @@ export default function CourseView({ modules, completedIds: initial, userId }: P
                   allowFullScreen
                 />
               </div>
-            ) : (
+            ) : !selectedLesson.slideUrl ? (
               <div className="relative w-full aspect-video bg-[#0a0a0a] rounded-2xl border border-white/8 flex items-center justify-center">
                 <div className="text-center space-y-2">
                   <svg className="w-10 h-10 text-[#333] mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                   </svg>
-                  <p className="text-[#555] text-sm">No video added yet</p>
+                  <p className="text-[#555] text-sm">Content coming soon</p>
                 </div>
               </div>
-            )}
+            ) : null}
 
             {/* Lesson info */}
             <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-6 space-y-4">

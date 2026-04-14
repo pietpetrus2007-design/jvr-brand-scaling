@@ -10,9 +10,9 @@ interface InviteCode { id: string; code: string; tier: string; usedAt: string | 
 interface Student { id: string; name: string; email: string; tier: string; createdAt: string; _count: { progress: number } }
 interface Announcement { id: string; title: string; content: string; imageUrl: string | null; createdAt: string; user: { name: string } }
 interface TrackerEntry {
-  id: string; userId: string; dmsSent: number; whatsappsSent: number; emailsSent: number
-  coldCalls: number; replies: number; pendingClients: number; clientsAcquired: number
-  paymentsReceived: number; paymentsValue: number; moodScore: number; notes: string | null
+  id: string; userId: string; businessesOutreached: number; conversationsStarted: number
+  potentialClients: number; activeClients: number; paymentsReceived: number
+  paymentsValue: number; moodScore: number; notes: string | null
   createdAt: string; user: { name: string; email: string }
 }
 
@@ -432,27 +432,24 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
 
         const totals = filtered.reduce(
           (acc, e) => ({
-            dmsSent: acc.dmsSent + e.dmsSent,
-            whatsappsSent: acc.whatsappsSent + e.whatsappsSent,
-            emailsSent: acc.emailsSent + e.emailsSent,
-            coldCalls: acc.coldCalls + e.coldCalls,
-            replies: acc.replies + e.replies,
-            pendingClients: acc.pendingClients + e.pendingClients,
-            clientsAcquired: acc.clientsAcquired + e.clientsAcquired,
+            businessesOutreached: acc.businessesOutreached + e.businessesOutreached,
+            conversationsStarted: acc.conversationsStarted + e.conversationsStarted,
+            potentialClients: acc.potentialClients + e.potentialClients,
+            activeClients: acc.activeClients + e.activeClients,
             paymentsReceived: acc.paymentsReceived + e.paymentsReceived,
             paymentsValue: acc.paymentsValue + e.paymentsValue,
           }),
-          { dmsSent: 0, whatsappsSent: 0, emailsSent: 0, coldCalls: 0, replies: 0, pendingClients: 0, clientsAcquired: 0, paymentsReceived: 0, paymentsValue: 0 }
+          { businessesOutreached: 0, conversationsStarted: 0, potentialClients: 0, activeClients: 0, paymentsReceived: 0, paymentsValue: 0 }
         )
 
         function downloadCSV() {
-          const headers = ["Date", "Name", "Email", "DMs", "WA", "Email Sent", "Calls", "Replies", "Pending", "Clients", "Payments", "Value", "Mood", "Notes"]
+          const headers = ["Date", "Name", "Email", "Outreached", "Conversations", "Potential Clients", "Active Clients", "Payments", "Value", "Mood", "Notes"]
           const rows = filtered.map((e) => [
             new Date(e.createdAt).toLocaleDateString(),
             e.user.name,
             e.user.email,
-            e.dmsSent, e.whatsappsSent, e.emailsSent, e.coldCalls, e.replies,
-            e.pendingClients, e.clientsAcquired, e.paymentsReceived, e.paymentsValue,
+            e.businessesOutreached, e.conversationsStarted, e.potentialClients,
+            e.activeClients, e.paymentsReceived, e.paymentsValue,
             e.moodScore,
             e.notes ? `"${e.notes.replace(/"/g, '""')}"` : "",
           ])
@@ -483,18 +480,15 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
               </button>
             </div>
             <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl overflow-x-auto">
-              <table className="w-full text-xs min-w-[900px]">
+              <table className="w-full text-xs min-w-[700px]">
                 <thead>
                   <tr className="border-b border-white/8 text-[#888] uppercase tracking-wider">
                     <th className="text-left px-4 py-3">Student</th>
                     <th className="text-left px-4 py-3">Date</th>
-                    <th className="text-right px-3 py-3">DMs</th>
-                    <th className="text-right px-3 py-3">WA</th>
-                    <th className="text-right px-3 py-3">Email</th>
-                    <th className="text-right px-3 py-3">Calls</th>
-                    <th className="text-right px-3 py-3">Replies</th>
-                    <th className="text-right px-3 py-3">Pending</th>
-                    <th className="text-right px-3 py-3">Clients</th>
+                    <th className="text-right px-3 py-3">Outreached</th>
+                    <th className="text-right px-3 py-3">Convos</th>
+                    <th className="text-right px-3 py-3">Potential</th>
+                    <th className="text-right px-3 py-3">Active</th>
                     <th className="text-right px-3 py-3">Payments</th>
                     <th className="text-right px-3 py-3">Value</th>
                     <th className="text-right px-3 py-3">Mood</th>
@@ -508,31 +502,25 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
                         <p className="text-[#555] text-xs">{e.user.email}</p>
                       </td>
                       <td className="px-4 py-3 text-[#888]">{new Date(e.createdAt).toLocaleDateString()}</td>
-                      <td className="px-3 py-3 text-right text-white">{e.dmsSent}</td>
-                      <td className="px-3 py-3 text-right text-white">{e.whatsappsSent}</td>
-                      <td className="px-3 py-3 text-right text-white">{e.emailsSent}</td>
-                      <td className="px-3 py-3 text-right text-white">{e.coldCalls}</td>
-                      <td className="px-3 py-3 text-right text-white">{e.replies}</td>
-                      <td className="px-3 py-3 text-right text-white">{e.pendingClients}</td>
-                      <td className="px-3 py-3 text-right text-[#FF6B00] font-semibold">{e.clientsAcquired}</td>
+                      <td className="px-3 py-3 text-right text-white">{e.businessesOutreached}</td>
+                      <td className="px-3 py-3 text-right text-white">{e.conversationsStarted}</td>
+                      <td className="px-3 py-3 text-right text-white">{e.potentialClients}</td>
+                      <td className="px-3 py-3 text-right text-[#FF6B00] font-semibold">{e.activeClients}</td>
                       <td className="px-3 py-3 text-right text-white">{e.paymentsReceived}</td>
                       <td className="px-3 py-3 text-right text-[#FF6B00] font-semibold">R{e.paymentsValue.toLocaleString()}</td>
                       <td className="px-3 py-3 text-right text-white">{e.moodScore}/10</td>
                     </tr>
                   ))}
                   {filtered.length === 0 && (
-                    <tr><td colSpan={12} className="px-4 py-10 text-center text-[#555]">No entries found.</td></tr>
+                    <tr><td colSpan={9} className="px-4 py-10 text-center text-[#555]">No entries found.</td></tr>
                   )}
                   {filtered.length > 0 && (
                     <tr className="border-t border-white/12 bg-white/3 font-bold">
                       <td className="px-4 py-3 text-[#888] text-xs uppercase tracking-wider" colSpan={2}>Totals</td>
-                      <td className="px-3 py-3 text-right text-white">{totals.dmsSent}</td>
-                      <td className="px-3 py-3 text-right text-white">{totals.whatsappsSent}</td>
-                      <td className="px-3 py-3 text-right text-white">{totals.emailsSent}</td>
-                      <td className="px-3 py-3 text-right text-white">{totals.coldCalls}</td>
-                      <td className="px-3 py-3 text-right text-white">{totals.replies}</td>
-                      <td className="px-3 py-3 text-right text-white">{totals.pendingClients}</td>
-                      <td className="px-3 py-3 text-right text-[#FF6B00]">{totals.clientsAcquired}</td>
+                      <td className="px-3 py-3 text-right text-white">{totals.businessesOutreached}</td>
+                      <td className="px-3 py-3 text-right text-white">{totals.conversationsStarted}</td>
+                      <td className="px-3 py-3 text-right text-white">{totals.potentialClients}</td>
+                      <td className="px-3 py-3 text-right text-[#FF6B00]">{totals.activeClients}</td>
                       <td className="px-3 py-3 text-right text-white">{totals.paymentsReceived}</td>
                       <td className="px-3 py-3 text-right text-[#FF6B00]">R{totals.paymentsValue.toLocaleString()}</td>
                       <td className="px-3 py-3" />

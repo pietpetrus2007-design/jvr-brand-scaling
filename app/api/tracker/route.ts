@@ -21,13 +21,10 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json()
   const {
-    dmsSent = 0,
-    whatsappsSent = 0,
-    emailsSent = 0,
-    coldCalls = 0,
-    replies = 0,
-    pendingClients = 0,
-    clientsAcquired = 0,
+    businessesOutreached = 0,
+    conversationsStarted = 0,
+    potentialClients = 0,
+    activeClients = 0,
     paymentsReceived = 0,
     paymentsValue = 0,
     moodScore = 5,
@@ -37,13 +34,10 @@ export async function POST(req: NextRequest) {
   const entry = await prisma.progressEntry.create({
     data: {
       userId: session.user.id,
-      dmsSent: Number(dmsSent),
-      whatsappsSent: Number(whatsappsSent),
-      emailsSent: Number(emailsSent),
-      coldCalls: Number(coldCalls),
-      replies: Number(replies),
-      pendingClients: Number(pendingClients),
-      clientsAcquired: Number(clientsAcquired),
+      businessesOutreached: Number(businessesOutreached),
+      conversationsStarted: Number(conversationsStarted),
+      potentialClients: Number(potentialClients),
+      activeClients: Number(activeClients),
       paymentsReceived: Number(paymentsReceived),
       paymentsValue: Number(paymentsValue),
       moodScore: Math.min(10, Math.max(1, Number(moodScore))),

@@ -56,12 +56,23 @@ export default function CourseView({ modules, completedIds: initial, userId }: P
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  function getNextLesson(lessonId: string): Lesson | null {
+    const allLessons = modules.flatMap(m => m.lessons)
+    const idx = allLessons.findIndex(l => l.id === lessonId)
+    return idx >= 0 && idx < allLessons.length - 1 ? allLessons[idx + 1] : null
+  }
+
   async function markComplete(lessonId: string) {
     if (completedIds.has(lessonId)) return
     setCompleting(true)
     await fetch(`/api/lessons/${lessonId}/complete`, { method: "POST" })
     setCompletedIds((prev) => new Set([...prev, lessonId]))
     setCompleting(false)
+    // Auto-advance to next lesson
+    const next = getNextLesson(lessonId)
+    if (next) {
+      setTimeout(() => handleLessonClick(next), 400)
+    }
   }
 
   const embedUrl = selectedLesson?.videoUrl ? getEmbedUrl(selectedLesson.videoUrl) : null

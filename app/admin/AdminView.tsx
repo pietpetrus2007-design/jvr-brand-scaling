@@ -9,6 +9,12 @@ interface Module { id: string; title: string; description: string; order: number
 interface InviteCode { id: string; code: string; tier: string; usedAt: string | null; usedBy: { name: string; email: string } | null }
 interface Student { id: string; name: string; email: string; tier: string; createdAt: string; _count: { progress: number } }
 interface Announcement { id: string; title: string; content: string; imageUrl: string | null; createdAt: string; user: { name: string } }
+interface TrackerEntry {
+  id: string; userId: string; dmsSent: number; whatsappsSent: number; emailsSent: number
+  coldCalls: number; replies: number; pendingClients: number; clientsAcquired: number
+  paymentsReceived: number; paymentsValue: number; moodScore: number; notes: string | null
+  createdAt: string; user: { name: string; email: string }
+}
 
 interface Props {
   modules: Module[]
@@ -17,6 +23,7 @@ interface Props {
   totalCompletions: number
   students: Student[]
   announcements: Announcement[]
+  trackerEntries: TrackerEntry[]
 }
 
 const TIER_BADGE: Record<string, string> = {
@@ -25,14 +32,16 @@ const TIER_BADGE: Record<string, string> = {
   mentorship: "bg-[#FF6B00]/15 text-[#FF6B00]",
 }
 
-type Tab = "modules" | "codes" | "students" | "announcements"
+type Tab = "modules" | "codes" | "students" | "announcements" | "tracker"
 
-export default function AdminView({ modules: init, codes: initCodes, totalStudents, totalCompletions, students, announcements: initAnnouncements }: Props) {
+export default function AdminView({ modules: init, codes: initCodes, totalStudents, totalCompletions, students, announcements: initAnnouncements, trackerEntries: initTrackerEntries }: Props) {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>("modules")
   const [modules, setModules] = useState(init)
   const [codes, setCodes] = useState(initCodes)
   const [announcements, setAnnouncements] = useState(initAnnouncements)
+  const [trackerEntries] = useState(initTrackerEntries)
+  const [trackerFilter, setTrackerFilter] = useState("")
   const [newAnnouncement, setNewAnnouncement] = useState({ title: "", content: "", imageUrl: "" })
   const [announcementImageFile, setAnnouncementImageFile] = useState<File | null>(null)
   const [announcementImagePreview, setAnnouncementImagePreview] = useState<string | null>(null)
@@ -197,7 +206,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
 
       {/* Tabs */}
       <div className="flex gap-1 bg-white/5 border border-white/8 p-1 rounded-xl w-fit flex-wrap">
-        {(["modules", "codes", "students", "announcements"] as Tab[]).map((t) => (
+        {(["modules", "codes", "students", "announcements", "tracker"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -410,6 +419,131 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
           </table>
         </div>
       )}
+
+      {/* Tracker tab */}
+      {tab === "tracker" && (() => {
+        const filtered = trackerFilter.trim()
+          ? trackerEntries.filter(
+              (e) =>
+                e.user.name.toLowerCase().includes(trackerFilter.toLowerCase()) ||
+                e.user.email.toLowerCase().includes(trackerFilter.toLowerCase())
+            )
+          : trackerEntries
+
+        const totals = filtered.reduce(
+          (acc, e) => ({
+            dmsSent: acc.dmsSent + e.dmsSent,
+            whatsappsSent: acc.whatsappsSent + e.whatsappsSent,
+            emailsSent: acc.emailsSent + e.emailsSent,
+            coldCalls: acc.coldCalls + e.coldCalls,
+            replies: acc.replies + e.replies,
+            pendingClients: acc.pendingClients + e.pendingClients,
+            clientsAcquired: acc.clientsAcquired + e.clientsAcquired,
+            paymentsReceived: acc.paymentsReceived + e.paymentsReceived,
+            paymentsValue: acc.paymentsValue + e.paymentsValue,
+          }),
+          { dmsSent: 0, whatsappsSent: 0, emailsSent: 0, coldCalls: 0, replies: 0, pendingClients: 0, clientsAcquired: 0, paymentsReceived: 0, paymentsValue: 0 }
+        )
+
+        function downloadCSV() {
+          const headers = ["Date", "Name", "Email", "DMs", "WA", "Email Sent", "Calls", "Replies", "Pending", "Clients", "Payments", "Value", "Mood", "Notes"]
+          const rows = filtered.map((e) => [
+            new Date(e.createdAt).toLocaleDateString(),
+            e.user.name,
+            e.user.email,
+            e.dmsSent, e.whatsappsSent, e.emailsSent, e.coldCalls, e.replies,
+            e.pendingClients, e.clientsAcquired, e.paymentsReceived, e.paymentsValue,
+            e.moodScore,
+            e.notes ? `"${e.notes.replace(/"/g, '""')}"` : "",
+          ])
+          const csv = [headers, ...rows].map((r) => r.join(",")).join("\n")
+          const blob = new Blob([csv], { type: "text/csv" })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement("a")
+          a.href = url
+          a.download = "tracker-export.csv"
+          a.click()
+          URL.revokeObjectURL(url)
+        }
+
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 flex-wrap">
+              <input
+                value={trackerFilter}
+                onChange={(e) => setTrackerFilter(e.target.value)}
+                placeholder="Filter by student name or email..."
+                className={`flex-1 min-w-[200px] ${inputCls}`}
+              />
+              <button
+                onClick={downloadCSV}
+                className="bg-white/8 hover:bg-white/12 border border-white/10 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors duration-150"
+              >
+                Export CSV
+              </button>
+            </div>
+            <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl overflow-x-auto">
+              <table className="w-full text-xs min-w-[900px]">
+                <thead>
+                  <tr className="border-b border-white/8 text-[#888] uppercase tracking-wider">
+                    <th className="text-left px-4 py-3">Student</th>
+                    <th className="text-left px-4 py-3">Date</th>
+                    <th className="text-right px-3 py-3">DMs</th>
+                    <th className="text-right px-3 py-3">WA</th>
+                    <th className="text-right px-3 py-3">Email</th>
+                    <th className="text-right px-3 py-3">Calls</th>
+                    <th className="text-right px-3 py-3">Replies</th>
+                    <th className="text-right px-3 py-3">Pending</th>
+                    <th className="text-right px-3 py-3">Clients</th>
+                    <th className="text-right px-3 py-3">Payments</th>
+                    <th className="text-right px-3 py-3">Value</th>
+                    <th className="text-right px-3 py-3">Mood</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {filtered.map((e) => (
+                    <tr key={e.id} className="hover:bg-white/3 transition-colors duration-150">
+                      <td className="px-4 py-3">
+                        <p className="text-white font-semibold">{e.user.name}</p>
+                        <p className="text-[#555] text-xs">{e.user.email}</p>
+                      </td>
+                      <td className="px-4 py-3 text-[#888]">{new Date(e.createdAt).toLocaleDateString()}</td>
+                      <td className="px-3 py-3 text-right text-white">{e.dmsSent}</td>
+                      <td className="px-3 py-3 text-right text-white">{e.whatsappsSent}</td>
+                      <td className="px-3 py-3 text-right text-white">{e.emailsSent}</td>
+                      <td className="px-3 py-3 text-right text-white">{e.coldCalls}</td>
+                      <td className="px-3 py-3 text-right text-white">{e.replies}</td>
+                      <td className="px-3 py-3 text-right text-white">{e.pendingClients}</td>
+                      <td className="px-3 py-3 text-right text-[#FF6B00] font-semibold">{e.clientsAcquired}</td>
+                      <td className="px-3 py-3 text-right text-white">{e.paymentsReceived}</td>
+                      <td className="px-3 py-3 text-right text-[#FF6B00] font-semibold">R{e.paymentsValue.toLocaleString()}</td>
+                      <td className="px-3 py-3 text-right text-white">{e.moodScore}/10</td>
+                    </tr>
+                  ))}
+                  {filtered.length === 0 && (
+                    <tr><td colSpan={12} className="px-4 py-10 text-center text-[#555]">No entries found.</td></tr>
+                  )}
+                  {filtered.length > 0 && (
+                    <tr className="border-t border-white/12 bg-white/3 font-bold">
+                      <td className="px-4 py-3 text-[#888] text-xs uppercase tracking-wider" colSpan={2}>Totals</td>
+                      <td className="px-3 py-3 text-right text-white">{totals.dmsSent}</td>
+                      <td className="px-3 py-3 text-right text-white">{totals.whatsappsSent}</td>
+                      <td className="px-3 py-3 text-right text-white">{totals.emailsSent}</td>
+                      <td className="px-3 py-3 text-right text-white">{totals.coldCalls}</td>
+                      <td className="px-3 py-3 text-right text-white">{totals.replies}</td>
+                      <td className="px-3 py-3 text-right text-white">{totals.pendingClients}</td>
+                      <td className="px-3 py-3 text-right text-[#FF6B00]">{totals.clientsAcquired}</td>
+                      <td className="px-3 py-3 text-right text-white">{totals.paymentsReceived}</td>
+                      <td className="px-3 py-3 text-right text-[#FF6B00]">R{totals.paymentsValue.toLocaleString()}</td>
+                      <td className="px-3 py-3" />
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Announcements tab */}
       {tab === "announcements" && (

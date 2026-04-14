@@ -27,10 +27,11 @@ model User {
   role          String         @default("student")
   tier          Tier           @default(basic)
   createdAt     DateTime       @default(now())
-  progress      Progress[]
-  messages      Message[]
-  announcements Announcement[]
-  inviteUsed    InviteCode?    @relation("UsedBy")
+  progress        Progress[]
+  messages        Message[]
+  announcements   Announcement[]
+  inviteUsed      InviteCode?     @relation("UsedBy")
+  progressEntries ProgressEntry[]
 }
 
 model InviteCode {
@@ -97,6 +98,24 @@ model Message {
   targetUserId String?
   createdAt    DateTime @default(now())
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ProgressEntry {
+  id               String   @id @default(cuid())
+  userId           String
+  dmsSent          Int      @default(0)
+  whatsappsSent    Int      @default(0)
+  emailsSent       Int      @default(0)
+  coldCalls        Int      @default(0)
+  replies          Int      @default(0)
+  pendingClients   Int      @default(0)
+  clientsAcquired  Int      @default(0)
+  paymentsReceived Int      @default(0)
+  paymentsValue    Float    @default(0)
+  moodScore        Int      @default(5)
+  notes            String?
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Announcement {

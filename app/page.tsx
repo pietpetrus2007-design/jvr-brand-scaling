@@ -69,25 +69,47 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats bar */}
-      <div className="border-t border-b border-white/5 py-6 px-6">
-        <div className="max-w-3xl mx-auto flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
-          {[
-            { num: "500+", label: "Students" },
-            { num: "3", label: "Tiers" },
-            { num: "Lifetime", label: "Access" },
-            { num: "Real", label: "Results" },
-          ].map((s, i) => (
-            <div key={s.label} className="flex items-center gap-8">
-              {i > 0 && <span className="text-[#333] hidden sm:block">•</span>}
-              <div className="text-center">
-                <span className="text-[#FF6B00] font-bold text-lg">{s.num}</span>
-                <span className="text-[#888] text-base ml-1.5">{s.label}</span>
+      {/* Who This Is For */}
+      <section className="py-24 px-6 border-t border-white/5">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-white">Is This For You?</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            {[
+              {
+                title: "Starting From Zero",
+                desc: "You have no experience but you're hungry to build a real income.",
+              },
+              {
+                title: "Want Real Income",
+                desc: "Done with low-paying jobs. You want to get paid for delivering results.",
+              },
+              {
+                title: "Work For Yourself",
+                desc: "You want freedom to work on your own terms and choose your clients.",
+              },
+              {
+                title: "Ready To Act",
+                desc: "You want a step-by-step system you can apply immediately.",
+              },
+            ].map((card) => (
+              <div
+                key={card.title}
+                className="group bg-[#0a0a0a] border border-white/8 hover:border-[#FF6B00]/40 rounded-2xl p-7 transition-all duration-150"
+              >
+                <div className="flex items-start gap-4">
+                  <span className="text-[#FF6B00] text-xl font-bold mt-0.5">✓</span>
+                  <div>
+                    <h3 className="text-white font-bold text-lg mb-1.5">{card.title}</h3>
+                    <p className="text-[#888] text-sm leading-relaxed">{card.desc}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
 
       {/* Features */}
       <section className="py-24 px-6">

@@ -165,6 +165,7 @@ export default function CourseView({ modules, completedIds: initial, userId }: P
                     src={`${selectedLesson.slideUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`}
                     title="Lesson Slides"
                     style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
+                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
                   />
                 </div>
                 {/* Mobile: download button only */}

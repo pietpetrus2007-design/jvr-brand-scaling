@@ -94,6 +94,70 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
         </div>
       </div>
 
+      {/* Tier Comparison */}
+      <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-6 space-y-4">
+        <h2 className="text-white font-bold text-lg">Your Plan</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Basic */}
+          <div className={`rounded-xl p-4 border transition-all duration-150 ${
+            currentTier === 'basic'
+              ? 'border-white/40 bg-white/8 ring-1 ring-white/20'
+              : 'border-white/8 bg-white/3 opacity-60'
+          }`}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-white font-bold text-sm">Basic</span>
+              {currentTier === 'basic' && <span className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
+              <span className="text-[#888] text-xs">R2,999</span>
+            </div>
+            <ul className="space-y-1.5 text-xs text-[#888]">
+              <li className="flex items-center gap-1.5"><span className="text-white">✓</span> Full course access</li>
+              <li className="flex items-center gap-1.5"><span className="text-white">✓</span> Wins &amp; Results chat</li>
+              <li className="flex items-center gap-1.5"><span className="text-white">✓</span> Lifetime access</li>
+              <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> Community chats</li>
+              <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> 1-on-1 with JvR</li>
+            </ul>
+          </div>
+          {/* Community */}
+          <div className={`rounded-xl p-4 border transition-all duration-150 ${
+            currentTier === 'community'
+              ? 'border-blue-500/50 bg-blue-500/8 ring-1 ring-blue-500/20'
+              : 'border-white/8 bg-white/3 opacity-60'
+          }`}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-blue-400 font-bold text-sm">Community</span>
+              {currentTier === 'community' && <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
+              <span className="text-[#888] text-xs">R4,999</span>
+            </div>
+            <ul className="space-y-1.5 text-xs text-[#888]">
+              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Everything in Basic</li>
+              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> All community chats</li>
+              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Q&amp;A room access</li>
+              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Weekly group calls</li>
+              <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> 1-on-1 with JvR</li>
+            </ul>
+          </div>
+          {/* Mentorship */}
+          <div className={`rounded-xl p-4 border transition-all duration-150 ${
+            currentTier === 'mentorship'
+              ? 'border-[#FF6B00]/50 bg-[#FF6B00]/8 ring-1 ring-[#FF6B00]/20'
+              : 'border-white/8 bg-white/3 opacity-60'
+          }`}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-[#FF6B00] font-bold text-sm">Mentorship</span>
+              {currentTier === 'mentorship' && <span className="text-xs bg-[#FF6B00]/20 text-[#FF6B00] px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
+              <span className="text-[#888] text-xs">R8,999</span>
+            </div>
+            <ul className="space-y-1.5 text-xs text-[#888]">
+              <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Everything in Community</li>
+              <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> 1-on-1 chat with JvR</li>
+              <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> 3 months mentorship</li>
+              <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Personal strategy</li>
+              <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Direct DM access</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       {/* Upgrade code */}
       <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-6 space-y-4">
         <div>

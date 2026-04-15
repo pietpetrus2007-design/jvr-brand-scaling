@@ -1,3 +1,19 @@
+Build a complete Shopify → Platform automation system.
+
+## What it does
+When someone pays on Shopify, they automatically get an invite code emailed to them.
+
+## 1. Add Resend API key to .env and Vercel
+RESEND_API_KEY=re_F3kQnS2R_PaWreTPt6j6K3jUeJXispfJK
+
+## 2. Install Resend
+npm install resend
+
+## 3. Create /api/shopify/webhook/route.ts
+
+This is the Shopify webhook endpoint. It receives order/paid events.
+
+```ts
 export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from "next/server"
@@ -35,33 +51,27 @@ function generateCode(): string {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.text()
-
+    
     // Verify Shopify webhook signature
     const hmacHeader = req.headers.get("x-shopify-hmac-sha256")
     const webhookSecret = process.env.SHOPIFY_WEBHOOK_SECRET
-
+    
     if (webhookSecret && hmacHeader) {
-      // Shopify signs with the secret as a UTF-8 string, digest as base64
       const computedHmac = crypto
         .createHmac("sha256", webhookSecret)
-        .update(body)
+        .update(body, "utf8")
         .digest("base64")
-      const valid = crypto.timingSafeEqual(
-        Buffer.from(computedHmac),
-        Buffer.from(hmacHeader)
-      )
-      if (!valid) {
-        console.error("HMAC mismatch", { computed: computedHmac, received: hmacHeader })
+      if (computedHmac !== hmacHeader) {
         return NextResponse.json({ error: "Invalid signature" }, { status: 401 })
       }
     }
 
     const order = JSON.parse(body)
-
+    
     // Get customer email
     const email = order.email || order.customer?.email
     const firstName = order.customer?.first_name || order.billing_address?.first_name || "there"
-
+    
     if (!email) {
       return NextResponse.json({ error: "No email" }, { status: 400 })
     }
@@ -82,17 +92,17 @@ export async function POST(req: NextRequest) {
     }
 
     // Check if this is an upgrade (customer already exists)
-    const existingUser = await prisma.user.findUnique({ where: { email } })
-
+    const existingUser = await (prisma.user as any).findUnique({ where: { email } })
+    
     if (existingUser) {
-      // Upgrade existing user's tier only if new tier is higher
+      // Upgrade existing user's tier
       const TIER_ORDER: Record<string, number> = { basic: 0, community: 1, mentorship: 2 }
       if (TIER_ORDER[tier] > TIER_ORDER[existingUser.tier]) {
-        await prisma.user.update({
+        await (prisma.user as any).update({
           where: { email },
-          data: { tier: tier as "basic" | "community" | "mentorship" },
+          data: { tier },
         })
-
+        
         // Send upgrade confirmation email
         await resend.emails.send({
           from: "program@brandscaling.co.za",
@@ -102,36 +112,36 @@ export async function POST(req: NextRequest) {
             <div style="font-family: -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background: #000; color: #fff; padding: 40px;">
               <h1 style="color: #FF6B00; font-size: 28px; margin-bottom: 8px;">You're upgraded!</h1>
               <p style="color: #888; margin-bottom: 32px;">JvR Brand Scaling Program</p>
-
+              
               <p style="font-size: 16px; line-height: 1.6;">Hey ${firstName},</p>
               <p style="font-size: 16px; line-height: 1.6; color: #ccc;">Your account has been upgraded to <strong style="color: #FF6B00;">${TIER_NAMES[tier]}</strong> access.</p>
-
+              
               <p style="font-size: 16px; line-height: 1.6; color: #ccc;">Log in to access your new features:</p>
-
+              
               <a href="https://jvr-brand-scaling.vercel.app/login" style="display: inline-block; background: #FF6B00; color: #fff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 16px 0;">Access Your Program →</a>
-
+              
               <p style="font-size: 14px; color: #555; margin-top: 32px;">JvR Brand Scaling Program · brandscaling.co.za</p>
             </div>
           `
         })
-
+        
         return NextResponse.json({ ok: true, action: "upgraded", tier })
       }
       return NextResponse.json({ ok: true, message: "User already at this tier or higher" })
     }
 
-    // New user — generate unique invite code
+    // New user — generate invite code
     let code = generateCode()
     let attempts = 0
     while (attempts < 10) {
-      const exists = await prisma.inviteCode.findUnique({ where: { code } })
+      const exists = await (prisma.inviteCode as any).findUnique({ where: { code } })
       if (!exists) break
       code = generateCode()
       attempts++
     }
 
-    await prisma.inviteCode.create({
-      data: { code, tier: tier as "basic" | "community" | "mentorship" }
+    await (prisma.inviteCode as any).create({
+      data: { code, tier }
     })
 
     // Send welcome email with invite code
@@ -143,15 +153,15 @@ export async function POST(req: NextRequest) {
         <div style="font-family: -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background: #000; color: #fff; padding: 40px;">
           <h1 style="color: #FF6B00; font-size: 28px; margin-bottom: 8px;">Welcome to the program.</h1>
           <p style="color: #888; margin-bottom: 32px;">JvR Brand Scaling Program</p>
-
+          
           <p style="font-size: 16px; line-height: 1.6;">Hey ${firstName},</p>
           <p style="font-size: 16px; line-height: 1.6; color: #ccc;">Your payment was received. Here's your access code for the <strong style="color: #FF6B00;">${TIER_NAMES[tier]}</strong> plan:</p>
-
+          
           <div style="background: #111; border: 2px solid #FF6B00; border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0;">
             <p style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px;">Your Invite Code</p>
             <p style="color: #FF6B00; font-size: 36px; font-weight: bold; font-family: monospace; letter-spacing: 4px; margin: 0;">${code}</p>
           </div>
-
+          
           <p style="font-size: 16px; line-height: 1.6; color: #ccc;">To create your account:</p>
           <ol style="color: #ccc; font-size: 15px; line-height: 2;">
             <li>Go to the link below</li>
@@ -159,9 +169,9 @@ export async function POST(req: NextRequest) {
             <li>Create your account</li>
             <li>Start learning immediately</li>
           </ol>
-
+          
           <a href="https://jvr-brand-scaling.vercel.app/register" style="display: inline-block; background: #FF6B00; color: #fff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 16px 0;">Create Your Account →</a>
-
+          
           <p style="font-size: 14px; color: #555; margin-top: 32px; border-top: 1px solid #222; padding-top: 24px;">Keep this code safe — it's linked to your purchase. If you have any issues, reply to this email.</p>
           <p style="font-size: 14px; color: #555;">JvR Brand Scaling Program · brandscaling.co.za</p>
         </div>
@@ -169,9 +179,29 @@ export async function POST(req: NextRequest) {
     })
 
     return NextResponse.json({ ok: true, action: "new_user", tier, code })
-
+    
   } catch (err) {
     console.error("Webhook error:", err)
     return NextResponse.json({ error: "Internal error" }, { status: 500 })
   }
 }
+```
+
+## 4. Add env vars to .env and Vercel
+RESEND_API_KEY=re_F3kQnS2R_PaWreTPt6j6K3jUeJXispfJK
+SHOPIFY_WEBHOOK_SECRET=  (leave blank for now, we'll add after creating webhook in Shopify)
+
+## 5. Build and deploy
+- npm install resend
+- npm run build (fix errors)
+- Add env vars to Vercel: vercel env add RESEND_API_KEY production
+- git add -A && git commit -m "feat: Shopify webhook + auto email invite codes"
+- git push origin main
+- vercel --prod
+
+## 6. After deploy, output the webhook URL
+The webhook URL will be: https://jvr-brand-scaling.vercel.app/api/shopify/webhook
+
+Print this URL clearly so we can add it to Shopify.
+
+- openclaw system event --text "Done: Shopify webhook deployed at /api/shopify/webhook" --mode now

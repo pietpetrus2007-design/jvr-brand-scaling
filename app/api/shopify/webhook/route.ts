@@ -23,15 +23,6 @@ const TIER_NAMES: Record<string, string> = {
   mentorship: "Mentorship",
 }
 
-function generateCode(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
-  let code = ""
-  for (let i = 0; i < 8; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)]
-  }
-  return code
-}
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.text()
@@ -60,9 +51,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, message: `Skipping — status: ${order.financial_status}` })
     }
 
-    // Get customer email
+    // Get customer info
     const email = order.email || order.customer?.email
     const firstName = order.customer?.first_name || order.billing_address?.first_name || "there"
+    const lastName = order.customer?.last_name || order.billing_address?.last_name || ""
+    const fullName = [firstName, lastName].filter(Boolean).join(" ")
 
     if (!email) {
       return NextResponse.json({ error: "No email" }, { status: 400 })
@@ -81,30 +74,6 @@ export async function POST(req: NextRequest) {
     if (!tier) {
       console.log("Unknown product variant, skipping:", order.line_items)
       return NextResponse.json({ ok: true, message: "Unknown product, skipped" })
-    }
-
-    // Dedup: check if we already processed this exact order ID
-    const orderId = String(order.id || '')
-    if (orderId) {
-      // Store order ID in the notes field of an existing code, or check for recent duplicate
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
-      const recentCode = await (prisma.inviteCode as any).findFirst({
-        where: {
-          tier: tier as any,
-          usedById: null,
-          createdAt: { gte: fiveMinutesAgo }
-        },
-        orderBy: { createdAt: 'desc' }
-      })
-      // If there's already a fresh unused code for this tier created in last 5 min
-      // and we have a user email match, skip duplicate
-      if (recentCode) {
-        // Check if the email already has a pending invite
-        const existingUserCheck = await (prisma.user as any).findUnique({ where: { email } })
-        if (!existingUserCheck) {
-          return NextResponse.json({ ok: true, message: 'Duplicate order event, code already exists', code: recentCode.code })
-        }
-      }
     }
 
     // Check if this is an upgrade (customer already exists)
@@ -134,7 +103,7 @@ export async function POST(req: NextRequest) {
 
               <p style="font-size: 16px; line-height: 1.6; color: #ccc;">Log in to access your new features:</p>
 
-              <a href="https://jvr-brand-scaling.vercel.app/login" style="display: inline-block; background: #FF6B00; color: #fff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 16px 0;">Access Your Program →</a>
+              <a href="https://program.brandscaling.co.za/login" style="display: inline-block; background: #FF6B00; color: #fff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 16px 0;">Access Your Program →</a>
 
               <p style="font-size: 14px; color: #555; margin-top: 32px;">JvR Brand Scaling Program · brandscaling.co.za</p>
             </div>
@@ -146,59 +115,58 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, message: "User already at this tier or higher" })
     }
 
-    // New user — generate unique invite code
-    let code = generateCode()
-    let attempts = 0
-    while (attempts < 10) {
-      const exists = await prisma.inviteCode.findUnique({ where: { code } })
-      if (!exists) break
-      code = generateCode()
-      attempts++
+    // New user — create account directly
+    // Dedup: check if account already created for this email in the last 5 minutes
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
+    const recentUser = await prisma.user.findFirst({
+      where: {
+        email,
+        createdAt: { gte: fiveMinutesAgo },
+      }
+    })
+    if (recentUser) {
+      return NextResponse.json({ ok: true, message: 'Duplicate order event, account already created' })
     }
 
-    await prisma.inviteCode.create({
-      data: { code, tier: tier as "basic" | "community" | "mentorship" }
+    await prisma.user.create({
+      data: {
+        email,
+        name: fullName,
+        password: "",
+        role: "student",
+        tier: tier as "basic" | "community" | "mentorship",
+        needsPasswordSetup: true,
+      }
     })
 
-    // Send welcome email with invite code
+    // Send welcome email with password setup link
+    const encodedEmail = encodeURIComponent(email)
     try { await resend.emails.send({
       from: "program@brandscaling.co.za",
       to: email,
-      subject: `Your access code is ready — JvR Brand Scaling Program`,
+      subject: `Your account is ready — set your password`,
       html: `
         <div style="font-family: -apple-system, sans-serif; max-width: 600px; margin: 0 auto; background: #000; color: #fff; padding: 40px;">
           <h1 style="color: #FF6B00; font-size: 28px; margin-bottom: 8px;">Welcome to the program.</h1>
           <p style="color: #888; margin-bottom: 32px;">JvR Brand Scaling Program</p>
 
           <p style="font-size: 16px; line-height: 1.6;">Hey ${firstName},</p>
-          <p style="font-size: 16px; line-height: 1.6; color: #ccc;">Your payment was received. Here's your access code for the <strong style="color: #FF6B00;">${TIER_NAMES[tier]}</strong> plan:</p>
+          <p style="font-size: 16px; line-height: 1.6; color: #ccc;">Your payment was confirmed and your <strong style="color: #FF6B00;">${TIER_NAMES[tier]}</strong> account has been created.</p>
 
-          <div style="background: #111; border: 2px solid #FF6B00; border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0;">
-            <p style="color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; margin: 0 0 8px;">Your Invite Code</p>
-            <p style="color: #FF6B00; font-size: 36px; font-weight: bold; font-family: monospace; letter-spacing: 4px; margin: 0;">${code}</p>
-          </div>
+          <p style="font-size: 16px; line-height: 1.6; color: #ccc;">Click the button below to set your password and access the program immediately:</p>
 
-          <p style="font-size: 16px; line-height: 1.6; color: #ccc;">To create your account:</p>
-          <ol style="color: #ccc; font-size: 15px; line-height: 2;">
-            <li>Go to the link below</li>
-            <li>Enter your invite code: <strong style="color: #FF6B00;">${code}</strong></li>
-            <li>Create your account</li>
-            <li>Start learning immediately</li>
-          </ol>
+          <a href="https://program.brandscaling.co.za/welcome?email=${encodedEmail}" style="display: inline-block; background: #FF6B00; color: #fff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 16px 0;">Set Your Password →</a>
 
-          <a href="https://jvr-brand-scaling.vercel.app/register" style="display: inline-block; background: #FF6B00; color: #fff; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; margin: 16px 0;">Create Your Account →</a>
-
-          <p style="font-size: 14px; color: #555; margin-top: 32px; border-top: 1px solid #222; padding-top: 24px;">Keep this code safe — it's linked to your purchase. If you have any issues, reply to this email.</p>
+          <p style="font-size: 14px; color: #555; margin-top: 32px; border-top: 1px solid #222; padding-top: 24px;">If you have any issues, reply to this email.</p>
           <p style="font-size: 14px; color: #555;">JvR Brand Scaling Program · brandscaling.co.za</p>
         </div>
       `
     }) } catch(e) { console.error('Email send failed:', e) }
 
-    return NextResponse.json({ ok: true, action: 'new_user', tier, code })
+    return NextResponse.json({ ok: true, action: 'new_user', tier })
 
   } catch (err) {
     console.error("Webhook error:", err)
     return NextResponse.json({ error: "Internal error" }, { status: 500 })
   }
 }
-

@@ -48,6 +48,12 @@ function WelcomeForm() {
       return
     }
 
+    // Already activated — redirect to login
+    if (data.redirect) {
+      router.push("/login")
+      return
+    }
+
     // Activation succeeded — sign in
     const signInRes = await signIn("credentials", {
       email,
@@ -91,7 +97,7 @@ function WelcomeForm() {
           <div className="text-center space-y-1 pb-2">
             <h1 className="text-white font-bold text-2xl">Welcome to the Program 🎉</h1>
             <p className="text-[#888] text-sm">
-              Your payment was confirmed. Set your password to access your course.
+              Your account is ready. Set your password to get started.
             </p>
           </div>
 

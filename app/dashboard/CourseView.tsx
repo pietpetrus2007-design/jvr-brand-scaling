@@ -38,6 +38,7 @@ interface Props {
 const PARTS = [
   { value: 1, label: "Part 1: Get Clients" },
   { value: 2, label: "Part 2: Paid Ads" },
+  { value: 3, label: "Part 3: Payment Structure" },
 ]
 
 function getEmbedUrl(url: string): string | null {

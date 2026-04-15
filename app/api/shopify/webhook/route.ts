@@ -55,6 +55,11 @@ export async function POST(req: NextRequest) {
     const order = JSON.parse(body)
     console.log("WEBHOOK RECEIVED:", JSON.stringify({ email: order.email, financial_status: order.financial_status, line_items: order.line_items?.map((i: any) => ({ variant_id: i.variant_id, title: i.title })) }))
 
+    // Only process paid orders
+    if (order.financial_status && order.financial_status !== 'paid') {
+      return NextResponse.json({ ok: true, message: `Skipping — status: ${order.financial_status}` })
+    }
+
     // Get customer email
     const email = order.email || order.customer?.email
     const firstName = order.customer?.first_name || order.billing_address?.first_name || "there"
@@ -76,6 +81,17 @@ export async function POST(req: NextRequest) {
     if (!tier) {
       console.log("Unknown product variant, skipping:", order.line_items)
       return NextResponse.json({ ok: true, message: "Unknown product, skipped" })
+    }
+
+    // Check if we already processed this order (dedup by order ID + email)
+    const orderId = String(order.id || '')
+    if (orderId) {
+      const alreadyProcessed = await (prisma.inviteCode as any).findFirst({
+        where: { code: { startsWith: `ORD-${orderId.slice(-6)}` } }
+      })
+      if (alreadyProcessed) {
+        return NextResponse.json({ ok: true, message: 'Already processed' })
+      }
     }
 
     // Check if this is an upgrade (customer already exists)

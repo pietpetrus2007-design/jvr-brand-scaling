@@ -36,7 +36,7 @@ const ROOMS: Room[] = [
 ]
 
 const AVATAR_COLORS: Record<string, string> = {
-  basic: "bg-white/15 text-white border-white/20",
+  basic: "bg-[#888]/20 text-[#888] border-[#888]/30",
   community: "bg-blue-500/20 text-blue-400 border-blue-500/30",
   mentorship: "bg-[#FF6B00]/20 text-[#FF6B00] border-[#FF6B00]/30",
 }

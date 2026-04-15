@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { UPGRADE_LINKS, TIER_ORDER } from "@/lib/utils"
+import { UPGRADE_LINKS, TIER_ORDER, getUpgradeUrl } from "@/lib/utils"
 
 const TIER_STYLES: Record<string, { badge: string; label: string; glow: string }> = {
   basic: {
@@ -139,8 +139,8 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Weekly group calls</li>
               <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> 1-on-1 with JvR</li>
             </ul>
-            {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['community'] && UPGRADE_LINKS[currentTier]?.['community'] && (
-              <a href={UPGRADE_LINKS[currentTier]['community']} target="_blank" rel="noopener noreferrer"
+            {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['community'] && (
+              <a href={getUpgradeUrl(currentTier, 'community', email)} target="_blank" rel="noopener noreferrer"
                 className="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs py-2 rounded-lg transition-colors">
                 Upgrade Now →
               </a>
@@ -168,8 +168,8 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Personal strategy</li>
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Direct DM access</li>
             </ul>
-            {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['mentorship'] && UPGRADE_LINKS[currentTier]?.['mentorship'] && (
-              <a href={UPGRADE_LINKS[currentTier]['mentorship']} target="_blank" rel="noopener noreferrer"
+            {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['mentorship'] && (
+              <a href={getUpgradeUrl(currentTier, 'mentorship', email)} target="_blank" rel="noopener noreferrer"
                 className="block w-full text-center bg-[#FF6B00] hover:bg-[#e05e00] text-white font-bold text-xs py-2 rounded-lg transition-colors">
                 Upgrade Now →
               </a>

@@ -11,6 +11,7 @@ export default async function CommunityPage() {
     <CommunityView
       userId={session.user.id!}
       userName={session.user.name || ""}
+      userEmail={session.user.email || ""}
       userTier={(session.user as any).tier || "basic"}
       userRole={(session.user as any).role || "student"}
     />

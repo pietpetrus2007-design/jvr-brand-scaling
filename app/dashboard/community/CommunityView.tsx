@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { TIER_ORDER, UPGRADE_LINKS } from "@/lib/utils"
+import { TIER_ORDER, getUpgradeUrl } from "@/lib/utils"
 
 interface Message {
   id: string
@@ -53,12 +53,13 @@ function formatTime(iso: string) {
 
 interface Props {
   userId: string
+  userEmail?: string
   userName: string
   userTier: string
   userRole: string
 }
 
-export default function CommunityView({ userId, userName, userTier, userRole }: Props) {
+export default function CommunityView({ userId, userName, userEmail, userTier, userRole }: Props) {
   const [activeRoom, setActiveRoom] = useState("wins")
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
@@ -80,8 +81,8 @@ export default function CommunityView({ userId, userName, userTier, userRole }: 
   }
 
   function getUpgradeLink(room: Room) {
-    if (room.minTier === "community") return UPGRADE_LINKS[userTier]?.community || UPGRADE_LINKS.basic.community
-    if (room.minTier === "mentorship") return UPGRADE_LINKS[userTier]?.mentorship || UPGRADE_LINKS.basic.mentorship
+    if (room.minTier === "community") return getUpgradeUrl(userTier, 'community', userEmail)
+    if (room.minTier === "mentorship") return getUpgradeUrl(userTier, 'mentorship', userEmail)
     return null
   }
 

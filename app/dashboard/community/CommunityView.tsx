@@ -13,6 +13,14 @@ interface Message {
   user: { id: string; name: string; tier: string; role?: string }
 }
 
+interface StudentThread {
+  id: string
+  name: string
+  tier: string
+  lastMessage: string
+  lastTime: string
+}
+
 interface Room {
   id: string
   label: string
@@ -58,6 +66,8 @@ export default function CommunityView({ userId, userName, userTier, userRole }: 
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
+  const [lastReadAt, setLastReadAt] = useState<Record<string, string>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -128,10 +138,12 @@ export default function CommunityView({ userId, userName, userTier, userRole }: 
       setUploading(false)
     }
 
+    const targetUserId = isAdmin && activeRoom === "private" && selectedStudentId ? selectedStudentId : undefined
+
     await fetch("/api/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: input.trim(), room: activeRoom, imageUrl: uploadedUrl }),
+      body: JSON.stringify({ content: input.trim(), room: activeRoom, imageUrl: uploadedUrl, targetUserId }),
     })
     setInput("")
     clearImage()
@@ -142,14 +154,63 @@ export default function CommunityView({ userId, userName, userTier, userRole }: 
   const currentRoom = ROOMS.find((r) => r.id === activeRoom)!
   const hasAccess = canAccess(currentRoom)
 
-  const groupedPrivate = activeRoom === "private" && isAdmin
-    ? messages.reduce((acc, msg) => {
-        const key = msg.user.id === userId ? (msg.targetUserId || "unknown") : msg.user.id
-        if (!acc[key]) acc[key] = []
-        acc[key].push(msg)
-        return acc
-      }, {} as Record<string, Message[]>)
-    : null
+  const isAdminPrivate = isAdmin && activeRoom === "private"
+
+  // Build student thread list for admin private view
+  const studentThreads: StudentThread[] = isAdminPrivate
+    ? Object.values(
+        messages.reduce((acc, msg) => {
+          const isStudentMsg = msg.user.id !== userId
+          const studentId = isStudentMsg ? msg.user.id : (msg.targetUserId || null)
+          if (!studentId) return acc
+          const student = isStudentMsg ? msg.user : null
+          const existing = acc[studentId]
+          if (!existing) {
+            acc[studentId] = {
+              id: studentId,
+              name: student?.name || "Unknown",
+              tier: student?.tier || "basic",
+              lastMessage: msg.content || (msg.imageUrl ? "📷 Image" : ""),
+              lastTime: msg.createdAt,
+            }
+          } else {
+            if (student) {
+              existing.name = student.name
+              existing.tier = student.tier
+            }
+            if (new Date(msg.createdAt) > new Date(existing.lastTime)) {
+              existing.lastMessage = msg.content || (msg.imageUrl ? "📷 Image" : "")
+              existing.lastTime = msg.createdAt
+            }
+          }
+          return acc
+        }, {} as Record<string, StudentThread>)
+      ).sort((a, b) => new Date(b.lastTime).getTime() - new Date(a.lastTime).getTime())
+    : []
+
+  // Filter messages for selected student thread
+  const threadMessages = isAdminPrivate && selectedStudentId
+    ? messages.filter(
+        (msg) =>
+          (msg.user.id === selectedStudentId) ||
+          (msg.user.id === userId && msg.targetUserId === selectedStudentId)
+      )
+    : messages
+
+  const selectedStudent = studentThreads.find((s) => s.id === selectedStudentId)
+
+  function selectStudent(studentId: string) {
+    setSelectedStudentId(studentId)
+    setLastReadAt((prev) => ({ ...prev, [studentId]: new Date().toISOString() }))
+  }
+
+  function hasUnread(studentId: string): boolean {
+    const readAt = lastReadAt[studentId]
+    if (!readAt) return true
+    return messages.some(
+      (msg) => msg.user.id === studentId && new Date(msg.createdAt) > new Date(readAt)
+    )
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row gap-5 h-[calc(100vh-56px)]">
@@ -220,6 +281,109 @@ export default function CommunityView({ userId, userName, userTier, userRole }: 
               </a>
             )}
           </div>
+        ) : isAdminPrivate ? (
+          /* WhatsApp-style admin private view */
+          <div className="flex flex-1 min-h-0">
+            {/* Student list sidebar */}
+            <div className="w-[200px] flex-shrink-0 border-r border-white/8 flex flex-col min-h-0">
+              <p className="text-xs uppercase tracking-widest text-[#444] font-semibold px-3 py-2.5 border-b border-white/5">Students</p>
+              <div className="flex-1 overflow-y-auto">
+                {studentThreads.length === 0 ? (
+                  <p className="text-[#555] text-xs text-center p-4">No conversations yet</p>
+                ) : (
+                  studentThreads.map((s) => {
+                    const isSelected = selectedStudentId === s.id
+                    const unread = hasUnread(s.id)
+                    return (
+                      <button
+                        key={s.id}
+                        onClick={() => selectStudent(s.id)}
+                        className={`w-full text-left px-3 py-2.5 flex items-start gap-2 transition-all duration-150 border-l-2 ${
+                          isSelected
+                            ? "bg-[#FF6B00]/10 border-[#FF6B00]"
+                            : "border-transparent hover:bg-white/5"
+                        }`}
+                      >
+                        <div className={`w-7 h-7 rounded-full border flex-shrink-0 flex items-center justify-center text-xs font-bold mt-0.5 ${AVATAR_COLORS[s.tier] || AVATAR_COLORS.basic}`}>
+                          {s.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs text-white font-semibold truncate flex-1">{s.name}</span>
+                            {unread && !isSelected && (
+                              <span className="w-2 h-2 rounded-full bg-[#FF6B00] flex-shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-[10px] text-[#555] truncate">{s.lastMessage || "..."}</p>
+                          <p className="text-[9px] text-[#444]">{formatTime(s.lastTime)}</p>
+                        </div>
+                      </button>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Thread view */}
+            <div className="flex-1 flex flex-col min-h-0">
+              {!selectedStudentId ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <p className="text-[#555] text-sm">Select a student to view their thread</p>
+                </div>
+              ) : (
+                <>
+                  {/* Thread header */}
+                  <div className="px-4 py-2.5 border-b border-white/8 flex items-center gap-2">
+                    <div className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-bold ${AVATAR_COLORS[selectedStudent?.tier || "basic"]}`}>
+                      {selectedStudent?.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span className="text-sm text-white font-semibold">{selectedStudent?.name}</span>
+                  </div>
+
+                  {/* Thread messages */}
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                    {threadMessages.length === 0 && (
+                      <p className="text-center text-[#555] text-sm pt-8">No messages yet.</p>
+                    )}
+                    {threadMessages.map((msg) => (
+                      <MessageItem key={msg.id} msg={msg} currentUserId={userId} />
+                    ))}
+                    <div ref={bottomRef} />
+                  </div>
+
+                  {/* Image preview */}
+                  {imagePreview && (
+                    <div className="px-4 pt-3 border-t border-white/8">
+                      <div className="relative inline-block">
+                        <img src={imagePreview} alt="Preview" className="max-h-28 rounded-xl object-cover border border-white/15" />
+                        <button type="button" onClick={clearImage} className="absolute -top-2 -right-2 w-5 h-5 bg-black border border-white/20 rounded-full text-xs text-[#888] hover:text-white flex items-center justify-center transition-colors duration-150">×</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Reply input */}
+                  <form onSubmit={sendMessage} className="p-3 border-t border-white/8 flex gap-2 items-center">
+                    <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/gif,image/webp" onChange={handleImageSelect} className="hidden" />
+                    <button type="button" onClick={() => fileInputRef.current?.click()} className="flex-shrink-0 w-9 h-9 rounded-lg bg-white/5 hover:bg-[#FF6B00]/10 border border-white/8 hover:border-[#FF6B00]/30 flex items-center justify-center transition-all duration-150" title="Upload image">
+                      <svg className="w-4 h-4 text-[#888]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </button>
+                    <input
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      placeholder={`Reply to ${selectedStudent?.name}...`}
+                      className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-[#FF6B00] focus:shadow-[0_0_0_3px_rgba(255,107,0,0.1)] transition-all duration-150 placeholder:text-[#555]"
+                    />
+                    <button type="submit" disabled={(!input.trim() && !imageFile) || sending} className="bg-[#FF6B00] hover:bg-[#e05e00] disabled:opacity-40 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-colors duration-150 flex-shrink-0">
+                      {uploading ? "..." : sending ? "..." : "Send"}
+                    </button>
+                  </form>
+                </>
+              )}
+            </div>
+          </div>
         ) : (
           <>
             {/* Messages */}
@@ -227,21 +391,7 @@ export default function CommunityView({ userId, userName, userTier, userRole }: 
               {messages.length === 0 && (
                 <p className="text-center text-[#555] text-sm pt-8">No messages yet. Be the first!</p>
               )}
-              {groupedPrivate ? (
-                Object.entries(groupedPrivate).map(([studentId, msgs]) => {
-                  const student = msgs.find((m) => m.user.id !== userId)?.user || msgs[0].user
-                  return (
-                    <div key={studentId} className="mb-6">
-                      <p className="text-xs text-[#555] mb-3 font-semibold uppercase tracking-wider">Thread with {student.name}</p>
-                      {msgs.map((msg) => (
-                        <MessageItem key={msg.id} msg={msg} currentUserId={userId} />
-                      ))}
-                    </div>
-                  )
-                })
-              ) : (
-                messages.map((msg) => <MessageItem key={msg.id} msg={msg} currentUserId={userId} />)
-              )}
+              {messages.map((msg) => <MessageItem key={msg.id} msg={msg} currentUserId={userId} />)}
               <div ref={bottomRef} />
             </div>
 

@@ -212,32 +212,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
         )}
       </div>
 
-      {/* Upgrade purchase links */}
-      {Object.keys(upgradeLinks).length > 0 && (
-        <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-6 space-y-4">
-          <div>
-            <h2 className="text-white font-bold text-lg">Upgrade Your Access</h2>
-            <p className="text-[#888] text-sm mt-1">Unlock more rooms, features, and direct access</p>
-          </div>
-          <div className="space-y-3">
-            {Object.entries(upgradeLinks).map(([targetTier, link]) => (
-              <a
-                key={targetTier}
-                href={link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between bg-white/5 hover:bg-[#FF6B00]/8 border border-white/8 hover:border-[#FF6B00]/30 rounded-xl p-4 transition-all duration-150 group"
-              >
-                <div>
-                  <p className="text-white font-bold capitalize">{targetTier} Tier</p>
-                  <p className="text-[#888] text-sm mt-0.5">Unlock more rooms and features</p>
-                </div>
-                <span className="text-[#FF6B00] group-hover:translate-x-1 transition-transform duration-150 text-lg">→</span>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
+
     </div>
   )
 }

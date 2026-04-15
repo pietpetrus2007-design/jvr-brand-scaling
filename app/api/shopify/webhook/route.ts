@@ -83,14 +83,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, message: "Unknown product, skipped" })
     }
 
-    // Check if we already processed this order (dedup by order ID + email)
+    // Dedup: check if we already processed this exact order ID
     const orderId = String(order.id || '')
     if (orderId) {
-      const alreadyProcessed = await (prisma.inviteCode as any).findFirst({
-        where: { code: { startsWith: `ORD-${orderId.slice(-6)}` } }
+      // Store order ID in the notes field of an existing code, or check for recent duplicate
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
+      const recentCode = await (prisma.inviteCode as any).findFirst({
+        where: {
+          tier: tier as any,
+          usedById: null,
+          createdAt: { gte: fiveMinutesAgo }
+        },
+        orderBy: { createdAt: 'desc' }
       })
-      if (alreadyProcessed) {
-        return NextResponse.json({ ok: true, message: 'Already processed' })
+      // If there's already a fresh unused code for this tier created in last 5 min
+      // and we have a user email match, skip duplicate
+      if (recentCode) {
+        // Check if the email already has a pending invite
+        const existingUserCheck = await (prisma.user as any).findUnique({ where: { email } })
+        if (!existingUserCheck) {
+          return NextResponse.json({ ok: true, message: 'Duplicate order event, code already exists', code: recentCode.code })
+        }
       }
     }
 

@@ -112,7 +112,7 @@ function WelcomeForm() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#aaa]">Email</label>
+              <label className="text-sm font-medium text-[#aaa]">Email <span className="text-[#555] font-normal">(use the same email from your Shopify checkout)</span></label>
               <input
                 type="email"
                 required

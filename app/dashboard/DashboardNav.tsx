@@ -9,9 +9,15 @@ interface Props {
 }
 
 const TIER_STYLES: Record<string, string> = {
-  basic: "bg-white/10 text-white border-white/20",
+  basic: "bg-[#888]/15 text-[#888] border-[#888]/30",
   community: "bg-blue-500/15 text-blue-400 border-blue-500/30",
   mentorship: "bg-[#FF6B00]/15 text-[#FF6B00] border-[#FF6B00]/30",
+}
+
+const AVATAR_STYLES: Record<string, string> = {
+  basic: "bg-[#888]/20 border-[#888]/30 text-[#888]",
+  community: "bg-blue-500/20 border-blue-500/30 text-blue-400",
+  mentorship: "bg-[#FF6B00]/20 border-[#FF6B00]/30 text-[#FF6B00]",
 }
 
 export default function DashboardNav({ user }: Props) {
@@ -65,7 +71,7 @@ export default function DashboardNav({ user }: Props) {
             {user.tier}
           </span>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-full bg-[#FF6B00]/20 border border-[#FF6B00]/30 flex items-center justify-center text-xs font-bold text-[#FF6B00]">
+            <div className={`w-7 h-7 rounded-full border flex items-center justify-center text-xs font-bold ${AVATAR_STYLES[user.tier || 'basic']}`}>
               {initials}
             </div>
             <span className="text-sm text-white font-medium hidden md:block truncate max-w-[100px]">

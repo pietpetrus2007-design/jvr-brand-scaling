@@ -53,6 +53,7 @@ export async function POST(req: NextRequest) {
     }
 
     const order = JSON.parse(body)
+    console.log("WEBHOOK RECEIVED:", JSON.stringify({ email: order.email, financial_status: order.financial_status, line_items: order.line_items?.map((i: any) => ({ variant_id: i.variant_id, title: i.title })) }))
 
     // Get customer email
     const email = order.email || order.customer?.email

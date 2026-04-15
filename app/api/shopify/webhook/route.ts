@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
         })
 
         // Send upgrade confirmation email
-        await resend.emails.send({
+        try { await resend.emails.send({
           from: "program@brandscaling.co.za",
           to: email,
           subject: `Your ${TIER_NAMES[tier]} access is now active — JvR Brand Scaling`,
@@ -113,9 +113,9 @@ export async function POST(req: NextRequest) {
               <p style="font-size: 14px; color: #555; margin-top: 32px;">JvR Brand Scaling Program · brandscaling.co.za</p>
             </div>
           `
-        })
+        }) } catch(e) { console.error('Email send failed:', e) }
 
-        return NextResponse.json({ ok: true, action: "upgraded", tier })
+        return NextResponse.json({ ok: true, action: 'upgraded', tier })
       }
       return NextResponse.json({ ok: true, message: "User already at this tier or higher" })
     }
@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
     })
 
     // Send welcome email with invite code
-    await resend.emails.send({
+    try { await resend.emails.send({
       from: "program@brandscaling.co.za",
       to: email,
       subject: `Your access code is ready — JvR Brand Scaling Program`,
@@ -166,12 +166,13 @@ export async function POST(req: NextRequest) {
           <p style="font-size: 14px; color: #555;">JvR Brand Scaling Program · brandscaling.co.za</p>
         </div>
       `
-    })
+    }) } catch(e) { console.error('Email send failed:', e) }
 
-    return NextResponse.json({ ok: true, action: "new_user", tier, code })
+    return NextResponse.json({ ok: true, action: 'new_user', tier, code })
 
   } catch (err) {
     console.error("Webhook error:", err)
     return NextResponse.json({ error: "Internal error" }, { status: 500 })
   }
 }
+

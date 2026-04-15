@@ -129,7 +129,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               <span className="text-blue-400 font-bold text-sm">Community</span>
               {currentTier === 'community' && <span className="inline-block mt-1 text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
               {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['community'] && (
-                <p className="text-[#FF6B00] text-xs font-semibold mt-1">+R2,000 to upgrade</p>
+                <p className="text-blue-400 text-xs font-semibold mt-1">+R2,000 to upgrade</p>
               )}
             </div>
             <ul className="space-y-1.5 text-xs text-[#888] mb-4">

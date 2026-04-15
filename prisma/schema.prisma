@@ -49,6 +49,7 @@ model Module {
   title       String
   description String
   order       Int
+  part        Int      @default(1)
   createdAt   DateTime @default(now())
   lessons     Lesson[]
 }

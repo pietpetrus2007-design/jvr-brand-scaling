@@ -145,7 +145,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               <a href={getUpgradeUrl(currentTier, 'community', email)} target="_blank" rel="noopener noreferrer"
                 className="block w-full text-center text-white font-bold text-sm py-3 rounded-xl transition-all duration-200 shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:shadow-[0_0_30px_rgba(59,130,246,0.7)] hover:scale-[1.02] active:scale-[0.98]"
                 style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' }}>
-                ⚡ Upgrade to Community →
+Upgrade to Community →
               </a>
             )}
           </div>
@@ -175,11 +175,11 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
             </ul>
             {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['mentorship'] && (
               <div className="space-y-2">
-                <p className="text-center text-[10px] text-[#FF6B00]/80 font-semibold uppercase tracking-wider">🔥 Most Popular</p>
+                <p className="text-center text-[10px] text-[#FF6B00]/80 font-semibold uppercase tracking-wider">Most Popular</p>
                 <a href={getUpgradeUrl(currentTier, 'mentorship', email)} target="_blank" rel="noopener noreferrer"
                   className="block w-full text-center text-white font-bold text-sm py-3 rounded-xl transition-all duration-200 shadow-[0_0_25px_rgba(255,107,0,0.5)] hover:shadow-[0_0_40px_rgba(255,107,0,0.8)] hover:scale-[1.02] active:scale-[0.98]"
                   style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #cc4400 100%)' }}>
-                  🚀 Upgrade to Mentorship →
+                  Upgrade to Mentorship →
                 </a>
               </div>
             )}

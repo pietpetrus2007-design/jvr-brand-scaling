@@ -123,9 +123,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
           <div className={`rounded-xl p-4 border transition-all duration-150 ${
             currentTier === 'community'
               ? 'border-blue-500/50 bg-blue-500/8 ring-1 ring-blue-500/20'
-              : TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['community']
-                ? 'border-blue-500/40 bg-blue-500/5 ring-1 ring-blue-500/20'
-                : 'border-white/8 bg-white/3 opacity-60'
+              : 'border-white/8 bg-white/3 opacity-60'
           }`}>
             <div className="mb-3">
               <span className="text-blue-400 font-bold text-sm">Community</span>
@@ -143,9 +141,8 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
             </ul>
             {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['community'] && (
               <a href={getUpgradeUrl(currentTier, 'community', email)} target="_blank" rel="noopener noreferrer"
-                className="block w-full text-center text-white font-bold text-xs py-3 rounded-xl transition-all duration-200 shadow-[0_0_20px_rgba(59,130,246,0.4)] hover:shadow-[0_0_30px_rgba(59,130,246,0.7)] hover:scale-[1.02] active:scale-[0.98]"
-                style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)' }}>
-                Upgrade → Community
+                className="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs py-2 rounded-lg transition-colors">
+                Upgrade Now →
               </a>
             )}
           </div>
@@ -153,9 +150,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
           <div className={`rounded-xl p-4 border transition-all duration-150 ${
             currentTier === 'mentorship'
               ? 'border-[#FF6B00]/50 bg-[#FF6B00]/8 ring-1 ring-[#FF6B00]/20'
-              : TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['mentorship']
-                ? 'border-[#FF6B00]/40 bg-[#FF6B00]/5 ring-1 ring-[#FF6B00]/20'
-                : 'border-white/8 bg-white/3 opacity-60'
+              : 'border-white/8 bg-white/3 opacity-60'
           }`}>
             <div className="mb-3">
               <span className="text-[#FF6B00] font-bold text-sm">Mentorship</span>
@@ -175,9 +170,8 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
             </ul>
             {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['mentorship'] && (
               <a href={getUpgradeUrl(currentTier, 'mentorship', email)} target="_blank" rel="noopener noreferrer"
-                className="block w-full text-center text-white font-bold text-xs py-3 rounded-xl transition-all duration-200 shadow-[0_0_25px_rgba(255,107,0,0.5)] hover:shadow-[0_0_40px_rgba(255,107,0,0.8)] hover:scale-[1.02] active:scale-[0.98]"
-                style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #cc4400 100%)' }}>
-                Upgrade → Mentorship
+                className="block w-full text-center bg-[#FF6B00] hover:bg-[#e05e00] text-white font-bold text-xs py-2 rounded-lg transition-colors">
+                Upgrade Now →
               </a>
             )}
           </div>

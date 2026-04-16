@@ -110,7 +110,7 @@ export default function AskView() {
             placeholder="Ask anything about Brand Scaling..."
             rows={1}
             disabled={loading}
-            className="flex-1 bg-transparent text-white text-sm placeholder-[#555] resize-none outline-none px-2 py-1.5 max-h-32 disabled:opacity-50"
+            className="flex-1 bg-transparent text-white placeholder-[#555] resize-none outline-none px-2 py-1.5 max-h-32 disabled:opacity-50" style={{ fontSize: '16px' }}
             style={{ overflowY: "auto" }}
           />
           <button

@@ -16,7 +16,7 @@ export default function SlideViewer({ publicId, pages }: Props) {
 
   if (!publicId || pages === 0) return null
 
-  const fullSrc = `${CLOUD}/jvr-brand-scaling/hires/${publicId}/slide-${current}.jpg`
+  const fullSrc = `${CLOUD}/jvr-brand-scaling/hires/${publicId}/slide-${current}.jpg?v=2`
 
   return (
     <div className="space-y-3">

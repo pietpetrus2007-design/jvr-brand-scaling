@@ -178,8 +178,6 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
         </div>
       </div>
 
-      </div>
-
       {/* Tier Comparison */}
       <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-6 space-y-4">
         <h2 className="text-white font-bold text-lg">Your Plan</h2>

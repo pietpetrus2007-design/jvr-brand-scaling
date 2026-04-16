@@ -174,14 +174,11 @@ Upgrade to Community →
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Direct DM access</li>
             </ul>
             {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['mentorship'] && (
-              <div className="space-y-2">
-                <p className="text-center text-[10px] text-[#FF6B00]/80 font-semibold uppercase tracking-wider">Most Popular</p>
-                <a href={getUpgradeUrl(currentTier, 'mentorship', email)} target="_blank" rel="noopener noreferrer"
-                  className="block w-full text-center text-white font-bold text-sm py-3 rounded-xl transition-all duration-200 shadow-[0_0_25px_rgba(255,107,0,0.5)] hover:shadow-[0_0_40px_rgba(255,107,0,0.8)] hover:scale-[1.02] active:scale-[0.98]"
-                  style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #cc4400 100%)' }}>
-                  Upgrade to Mentorship →
-                </a>
-              </div>
+              <a href={getUpgradeUrl(currentTier, 'mentorship', email)} target="_blank" rel="noopener noreferrer"
+                className="block w-full text-center text-white font-bold text-sm py-3 rounded-xl transition-all duration-200 shadow-[0_0_25px_rgba(255,107,0,0.5)] hover:shadow-[0_0_40px_rgba(255,107,0,0.8)] hover:scale-[1.02] active:scale-[0.98]"
+                style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #cc4400 100%)' }}>
+                Upgrade to Mentorship →
+              </a>
             )}
           </div>
         </div>

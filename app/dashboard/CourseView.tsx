@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import SlideViewer from "./SlideViewer"
+import LessonQA from "./LessonQA"
 
 interface Resource {
   id: string
@@ -53,6 +54,7 @@ function getEmbedUrl(url: string): string | null {
 export default function CourseView({ completedIds: initial, userId }: Props) {
   const [completedIds, setCompletedIds] = useState(new Set(initial))
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null)
+  const [selectedModule, setSelectedModule] = useState<Module | null>(null)
   const [completing, setCompleting] = useState(false)
   const [mobileView, setMobileView] = useState<'list' | 'lesson'>('list')
   const [activePart, setActivePart] = useState(1)
@@ -62,6 +64,7 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
   useEffect(() => {
     setLoading(true)
     setSelectedLesson(null)
+    setSelectedModule(null)
     setMobileView('list')
     fetch(`/api/modules?part=${activePart}`)
       .then((r) => r.json())
@@ -72,8 +75,9 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
       .catch(() => setLoading(false))
   }, [activePart])
 
-  function handleLessonClick(lesson: Lesson) {
+  function handleLessonClick(lesson: Lesson, mod?: Module) {
     setSelectedLesson(lesson)
+    if (mod) setSelectedModule(mod)
     setMobileView('lesson')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -188,7 +192,7 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
                       return (
                         <button
                           key={lesson.id}
-                          onClick={() => handleLessonClick(lesson)}
+                          onClick={() => handleLessonClick(lesson, mod)}
                           className={`w-full text-left px-4 py-3 flex items-center gap-3 text-sm transition-all duration-150 border-b border-white/5 last:border-0 ${
                             isSelected
                               ? "bg-[#FF6B00]/12 text-white"
@@ -298,6 +302,12 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
                     ? "Saving..."
                     : "Mark as Complete"}
                 </button>
+                {selectedModule && (
+                  <LessonQA
+                    lessonTitle={selectedLesson.title}
+                    moduleTitle={selectedModule.title}
+                  />
+                )}
               </div>
             </div>
           ) : (

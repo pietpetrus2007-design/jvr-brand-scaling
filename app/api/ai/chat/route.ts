@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   if (!question) return NextResponse.json({ error: "Question is required" }, { status: 400 })
 
   const userContent = lessonContext
-    ? `Lesson context: ${lessonContext}\n\nQuestion: ${question}`
+    ? `[LESSON CONTEXT: The student is viewing: ${lessonContext}]\n\n${question}`
     : question
 
   try {

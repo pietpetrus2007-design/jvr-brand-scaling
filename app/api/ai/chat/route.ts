@@ -33,7 +33,9 @@ Rules:
 - If someone asks something off-topic, redirect: "That's outside what I cover — I focus on Brand Scaling. What would you like to know about the course?"
 - Never make up statistics or claim specific results
 - Be encouraging but honest
-- Keep answers concise and actionable (3-5 paragraphs max)`
+- Keep answers SHORT and direct. Simple question = 2-3 sentences max. Complex question = max 4-5 sentences. Never use long lists unless absolutely necessary.
+- Match the length of the question. If they ask something simple, answer simply.
+- No filler. No "Great question!". Just the answer.`
 
 const client = new Anthropic()
 
@@ -60,7 +62,7 @@ export async function POST(req: NextRequest) {
   try {
     const message = await client.messages.create({
       model: "claude-haiku-4-5",
-      max_tokens: 1024,
+      max_tokens: 400,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userContent }],
     })

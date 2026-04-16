@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import Providers from "./providers"
 import SwRegister from "./SwRegister"
+import InstallBanner from "./InstallBanner"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-black text-white min-h-screen">
         <Providers>{children}</Providers>
         <SwRegister />
+        <InstallBanner />
       </body>
     </html>
   )

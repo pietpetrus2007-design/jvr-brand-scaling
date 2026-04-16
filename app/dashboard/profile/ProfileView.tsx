@@ -88,7 +88,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
             <p className="text-xs text-[#888] mt-1">Lessons Completed</p>
           </div>
           <div className="bg-white/5 rounded-xl p-4">
-            <p className="text-3xl font-bold text-white capitalize">{currentTier}</p>
+            <p className="text-2xl font-bold text-white capitalize truncate">{currentTier}</p>
             <p className="text-xs text-[#888] mt-1">Current Tier</p>
           </div>
         </div>

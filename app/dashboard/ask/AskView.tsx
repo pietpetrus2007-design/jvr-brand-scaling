@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import ReactMarkdown from "react-markdown"
 
 interface Message {
   role: "user" | "assistant"
@@ -79,7 +80,20 @@ export default function AskView() {
                   : "bg-[#1a1a1a] border border-white/8 text-[#e0e0e0] rounded-bl-sm"
               }`}
             >
-              {m.content}
+              {m.role === 'assistant' ? (
+                <ReactMarkdown
+                  components={{
+                    p: ({children}) => <p className="mb-2 last:mb-0">{children}</p>,
+                    strong: ({children}) => <strong className="font-bold text-white">{children}</strong>,
+                    ul: ({children}) => <ul className="list-disc ml-4 mb-2 space-y-1">{children}</ul>,
+                    ol: ({children}) => <ol className="list-decimal ml-4 mb-2 space-y-1">{children}</ol>,
+                    li: ({children}) => <li>{children}</li>,
+                    h1: ({children}) => <h1 className="font-bold text-base mb-2">{children}</h1>,
+                    h2: ({children}) => <h2 className="font-bold text-sm mb-1.5">{children}</h2>,
+                    h3: ({children}) => <h3 className="font-semibold mb-1">{children}</h3>,
+                  }}
+                >{m.content}</ReactMarkdown>
+              ) : m.content}
             </div>
           </div>
         ))}

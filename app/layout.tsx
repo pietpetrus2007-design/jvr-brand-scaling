@@ -6,6 +6,13 @@ import SwRegister from "./SwRegister"
 
 const inter = Inter({ subsets: ["latin"] })
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
 export const metadata: Metadata = {
   title: "JvR Brand Scaling",
   description: "Learn to scale your brand with JvR's proven system.",

@@ -221,7 +221,7 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row gap-5 h-[calc(100vh-56px)]">
+    <div className="w-full px-4 py-6 flex flex-col md:flex-row gap-5 h-[calc(100vh-56px)]">
       {/* Room sidebar */}
       <aside className="md:w-52 flex-shrink-0">
         <p className="text-xs uppercase tracking-widest text-[#444] font-semibold mb-3 px-1">Rooms</p>

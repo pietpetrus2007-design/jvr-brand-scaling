@@ -39,7 +39,7 @@ export default function DashboardNav({ user }: Props) {
 
   return (
     <nav className="border-b border-white/8 bg-black/90 backdrop-blur sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
+      <div className="w-full px-4 flex items-center justify-between h-14">
         {/* Logo + links */}
         <div className="flex items-center gap-6">
           <Link href="/dashboard" className="font-bold text-base tracking-tight flex-shrink-0">

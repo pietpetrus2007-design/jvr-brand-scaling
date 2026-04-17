@@ -491,8 +491,11 @@ function MessageItem({ msg, currentUserId }: { msg: Message; currentUserId: stri
         {msg.imageUrl && (
           <a href={msg.imageUrl} target="_blank" rel="noopener noreferrer">
             <img
-              src={msg.imageUrl}
+              src={msg.imageUrl?.includes('cloudinary.com')
+                ? msg.imageUrl.replace('/upload/', '/upload/f_auto,q_auto:good,w_600/')
+                : msg.imageUrl}
               alt="Shared image"
+              loading="lazy"
               className="max-h-[280px] rounded-2xl object-cover cursor-pointer hover:opacity-90 transition-opacity duration-150 border border-white/10"
             />
           </a>

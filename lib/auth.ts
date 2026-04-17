@@ -34,8 +34,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string
-        ;(session.user as any).role = token.role
-        ;(session.user as any).tier = token.tier
+        // Always fetch fresh tier + role from DB so manual upgrades apply immediately
+        try {
+          const fresh = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { role: true, tier: true },
+          })
+          ;(session.user as any).role = fresh?.role ?? token.role
+          ;(session.user as any).tier = fresh?.tier ?? token.tier
+        } catch {
+          ;(session.user as any).role = token.role
+          ;(session.user as any).tier = token.tier
+        }
       }
       return session
     },

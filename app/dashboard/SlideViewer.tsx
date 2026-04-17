@@ -10,7 +10,7 @@ const CLOUD = "https://res.cloudinary.com/dwnfccsje/image/upload"
 
 // Build optimised URL — f_auto lets Cloudinary serve jpg/png/webp automatically
 function slideUrl(publicId: string, slide: number, width = 1200) {
-  return `${CLOUD}/f_auto,q_auto:best,w_${width}/jvr-brand-scaling/hires/${publicId}/slide-${slide}?v=4`
+  return `${CLOUD}/f_auto,q_auto:best,w_${width}/jvr-brand-scaling/hires/${publicId}/slide-${slide}?v=5`
 }
 
 export default function SlideViewer({ publicId, pages }: Props) {

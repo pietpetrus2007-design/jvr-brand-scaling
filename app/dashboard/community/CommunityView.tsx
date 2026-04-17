@@ -132,9 +132,14 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
       const fd = new FormData()
       fd.append("file", imageFile)
       const res = await fetch("/api/upload", { method: "POST", body: fd })
-      if (res.ok) {
-        const data = await res.json()
+      const data = await res.json()
+      if (res.ok && data.url) {
         uploadedUrl = data.url
+      } else {
+        console.error("Upload failed:", data)
+        setUploading(false)
+        setSending(false)
+        return
       }
       setUploading(false)
     }

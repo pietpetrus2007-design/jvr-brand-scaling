@@ -107,7 +107,7 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
   const overallPct = totalLessons > 0 ? Math.round((totalDone / totalLessons) * 100) : 0
 
   return (
-    <div className="w-full px-4 py-8 flex flex-col gap-6">
+    <div className="w-full px-6 py-8 flex flex-col gap-6">
       {/* Part Switcher */}
       <div className="overflow-x-auto">
         <div className="flex gap-0 border-b border-white/10 min-w-max">

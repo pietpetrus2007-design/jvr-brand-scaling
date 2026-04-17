@@ -131,10 +131,12 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
       setUploading(true)
       const fd = new FormData()
       fd.append("file", imageFile)
-      const res = await fetch("/api/upload", { method: "POST", body: fd })
+      // Upload directly to Cloudinary (bypasses Vercel 10s timeout)
+      fd.append("upload_preset", "jvr_community")
+      const res = await fetch("https://api.cloudinary.com/v1_1/dwnfccsje/image/upload", { method: "POST", body: fd })
       const data = await res.json()
-      if (res.ok && data.url) {
-        uploadedUrl = data.url
+      if (res.ok && data.secure_url) {
+        uploadedUrl = data.secure_url
       } else {
         console.error("Upload failed:", data)
         setUploading(false)

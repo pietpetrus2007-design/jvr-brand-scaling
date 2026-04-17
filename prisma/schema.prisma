@@ -126,3 +126,12 @@ model Announcement {
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model GroupCall {
+  id          String   @id @default(cuid())
+  title       String
+  scheduledAt DateTime
+  roomName    String   @unique
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}

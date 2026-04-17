@@ -8,7 +8,7 @@ export default async function AdminPage() {
   const session = await auth()
   if (!session?.user || (session.user as any).role !== "admin") redirect("/dashboard")
 
-  const [modules, codes, stats, announcements, trackerEntries] = await Promise.all([
+  const [modules, codes, stats, announcements, trackerEntries, calls] = await Promise.all([
     prisma.module.findMany({
       include: {
         lessons: {
@@ -40,6 +40,10 @@ export default async function AdminPage() {
       orderBy: { createdAt: "desc" },
       include: { user: { select: { name: true, email: true } } },
     }),
+    prisma.groupCall.findMany({
+      where: { isActive: true },
+      orderBy: { scheduledAt: "asc" },
+    }),
   ])
 
   const [totalStudents, totalCompletions, students] = stats
@@ -53,6 +57,7 @@ export default async function AdminPage() {
       students={students as any}
       announcements={announcements as any}
       trackerEntries={trackerEntries as any}
+      calls={calls as any}
     />
   )
 }

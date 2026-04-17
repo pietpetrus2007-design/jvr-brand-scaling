@@ -16,6 +16,14 @@ interface TrackerEntry {
   createdAt: string; user: { name: string; email: string }
 }
 
+interface GroupCall {
+  id: string
+  title: string
+  scheduledAt: string
+  roomName: string
+  isActive: boolean
+}
+
 interface Props {
   modules: Module[]
   codes: InviteCode[]
@@ -24,6 +32,7 @@ interface Props {
   students: Student[]
   announcements: Announcement[]
   trackerEntries: TrackerEntry[]
+  calls: GroupCall[]
 }
 
 const TIER_BADGE: Record<string, string> = {
@@ -32,15 +41,18 @@ const TIER_BADGE: Record<string, string> = {
   mentorship: "bg-[#FF6B00]/15 text-[#FF6B00]",
 }
 
-type Tab = "modules" | "codes" | "students" | "announcements" | "tracker"
+type Tab = "modules" | "codes" | "students" | "announcements" | "tracker" | "calls"
 
-export default function AdminView({ modules: init, codes: initCodes, totalStudents, totalCompletions, students, announcements: initAnnouncements, trackerEntries: initTrackerEntries }: Props) {
+export default function AdminView({ modules: init, codes: initCodes, totalStudents, totalCompletions, students, announcements: initAnnouncements, trackerEntries: initTrackerEntries, calls: initCalls }: Props) {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>("modules")
   const [modules, setModules] = useState(init)
   const [codes, setCodes] = useState(initCodes)
   const [announcements, setAnnouncements] = useState(initAnnouncements)
   const [trackerEntries] = useState(initTrackerEntries)
+  const [calls, setCalls] = useState(initCalls)
+  const [newCall, setNewCall] = useState({ title: "", scheduledAt: "" })
+  const [schedulingCall, setSchedulingCall] = useState(false)
   const [trackerFilter, setTrackerFilter] = useState("")
   const [newAnnouncement, setNewAnnouncement] = useState({ title: "", content: "", imageUrl: "" })
   const [announcementImageFile, setAnnouncementImageFile] = useState<File | null>(null)
@@ -173,6 +185,26 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
     setAnnouncements((prev) => prev.filter((a) => a.id !== id))
   }
 
+  async function scheduleCall() {
+    if (!newCall.title.trim() || !newCall.scheduledAt) return
+    setSchedulingCall(true)
+    const res = await fetch("/api/admin/calls", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newCall),
+    })
+    const created = await res.json()
+    setCalls((prev) => [...prev, created])
+    setNewCall({ title: "", scheduledAt: "" })
+    setSchedulingCall(false)
+  }
+
+  async function cancelCall(id: string) {
+    if (!confirm("Cancel this call?")) return
+    await fetch(`/api/admin/calls/${id}`, { method: "DELETE" })
+    setCalls((prev) => prev.filter((c) => c.id !== id))
+  }
+
   async function generateCodes() {
     setGenerating(true)
     const res = await fetch("/api/admin/invite-codes", {
@@ -206,7 +238,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
 
       {/* Tabs */}
       <div className="flex gap-1 bg-white/5 border border-white/8 p-1 rounded-xl w-fit flex-wrap">
-        {(["modules", "codes", "students", "announcements", "tracker"] as Tab[]).map((t) => (
+        {(["modules", "codes", "students", "announcements", "tracker", "calls"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -532,6 +564,70 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
           </div>
         )
       })()}
+
+      {/* Calls tab */}
+      {tab === "calls" && (
+        <div className="space-y-6">
+          <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-6 space-y-4">
+            <h2 className="text-white font-bold">Schedule Group Call</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <input
+                value={newCall.title}
+                onChange={(e) => setNewCall((p) => ({ ...p, title: e.target.value }))}
+                placeholder="Call title"
+                className={inputCls}
+              />
+              <input
+                type="datetime-local"
+                value={newCall.scheduledAt}
+                onChange={(e) => setNewCall((p) => ({ ...p, scheduledAt: e.target.value }))}
+                className={inputCls}
+              />
+              <button
+                onClick={scheduleCall}
+                disabled={!newCall.title.trim() || !newCall.scheduledAt || schedulingCall}
+                className="bg-[#FF6B00] hover:bg-[#e05e00] disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-colors duration-150 px-4 py-2.5"
+              >
+                {schedulingCall ? "Scheduling..." : "Schedule Call"}
+              </button>
+            </div>
+          </div>
+
+          {calls.length === 0 ? (
+            <p className="text-[#555] text-sm text-center py-8">No upcoming calls scheduled.</p>
+          ) : (
+            <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/8 text-[#888] text-xs uppercase tracking-wider">
+                    <th className="text-left px-4 py-3">Title</th>
+                    <th className="text-left px-4 py-3">Scheduled</th>
+                    <th className="text-left px-4 py-3">Room</th>
+                    <th className="text-left px-4 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {calls.map((c) => (
+                    <tr key={c.id} className="hover:bg-white/3 transition-colors duration-150">
+                      <td className="px-4 py-3 text-white font-semibold">{c.title}</td>
+                      <td className="px-4 py-3 text-[#888] text-xs">{new Date(c.scheduledAt).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-[#555] text-xs font-mono">{c.roomName}</td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => cancelCall(c.id)}
+                          className="text-red-400 hover:text-red-300 text-xs transition-colors duration-150"
+                        >
+                          Cancel
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Announcements tab */}
       {tab === "announcements" && (

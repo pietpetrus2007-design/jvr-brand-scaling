@@ -45,10 +45,12 @@ export async function POST(req: NextRequest) {
 
   let question: string
   let lessonContext: string | undefined
+  let history: { role: "user" | "assistant"; content: string }[] = []
   try {
     const body = await req.json()
     question = body.question?.trim()
     lessonContext = body.lessonContext?.trim()
+    history = body.history || []
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
@@ -59,12 +61,19 @@ export async function POST(req: NextRequest) {
     ? `[LESSON CONTEXT: The student is viewing: ${lessonContext}]\n\n${question}`
     : question
 
+  // Build messages with history (last 10 exchanges max to stay within token limits)
+  const recentHistory = history.slice(-20)
+  const messages = [
+    ...recentHistory,
+    { role: "user" as const, content: userContent },
+  ]
+
   try {
     const message = await client.messages.create({
       model: "claude-haiku-4-5",
       max_tokens: 400,
       system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userContent }],
+      messages,
     })
 
     const text = message.content

@@ -39,7 +39,8 @@ export default function LessonQA({ lessonTitle, moduleTitle }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           question: q,
-          lessonContext: `${moduleTitle} — ${lessonTitle}`
+          lessonContext: `${moduleTitle} — ${lessonTitle}`,
+          history: messages
         })
       })
       const data = await res.json()

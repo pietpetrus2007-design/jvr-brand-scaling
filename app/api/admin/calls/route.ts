@@ -20,11 +20,25 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   if (!await requireAdmin()) return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-  const { title, scheduledAt } = await req.json()
+  const { title, scheduledAt, startNow, inviteAll = true, invitedUserIds = [] } = await req.json()
+
+  const now = new Date()
   const randomSuffix = Math.random().toString(36).slice(2, 10)
   const roomName = `brandscaling-${randomSuffix}`
+
   const call = await prisma.groupCall.create({
-    data: { title, scheduledAt: new Date(scheduledAt), roomName },
+    data: {
+      title: title || "Live Group Call",
+      scheduledAt: startNow ? now : new Date(scheduledAt),
+      roomName,
+      startedAt: startNow ? now : null,
+      inviteAll,
+      ...((!inviteAll && invitedUserIds.length > 0) ? {
+        invitedUsers: {
+          create: (invitedUserIds as string[]).map((userId: string) => ({ userId })),
+        },
+      } : {}),
+    },
   })
   return NextResponse.json(call, { status: 201 })
 }

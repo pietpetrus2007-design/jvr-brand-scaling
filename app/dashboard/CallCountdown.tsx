@@ -8,6 +8,7 @@ interface GroupCall {
   title: string
   scheduledAt: string
   roomName: string
+  startedAt: string | null
 }
 
 interface Props {
@@ -30,15 +31,27 @@ export default function CallCountdown({ userName, isAdmin }: Props) {
   const [timeLeft, setTimeLeft] = useState<ReturnType<typeof getTimeLeft>>(null)
   const [showCall, setShowCall] = useState(false)
 
-  useEffect(() => {
+  function fetchCall() {
     fetch("/api/calls")
       .then((r) => r.json())
       .then((data) => setCall(data))
       .catch(() => setCall(null))
+  }
+
+  useEffect(() => {
+    fetchCall()
+    // Poll every 15 seconds to detect when a call goes live
+    const pollId = setInterval(fetchCall, 15_000)
+    return () => clearInterval(pollId)
   }, [])
 
   useEffect(() => {
     if (!call) return
+    // If already started, no countdown needed
+    if (call.startedAt) {
+      setTimeLeft(null)
+      return
+    }
     const target = new Date(call.scheduledAt)
     const tick = () => setTimeLeft(getTimeLeft(target))
     tick()
@@ -49,7 +62,7 @@ export default function CallCountdown({ userName, isAdmin }: Props) {
   if (call === undefined) return null
   if (!call) return null
 
-  const isLive = timeLeft === null
+  const isLive = !!call.startedAt || timeLeft === null
 
   return (
     <>
@@ -63,9 +76,16 @@ export default function CallCountdown({ userName, isAdmin }: Props) {
       )}
       <div className="mx-4 mt-4 bg-[#0f0f0f] border border-[#FF6B00]/30 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-4">
         <div className="flex-1 min-w-0">
-          <p className="text-[#FF6B00] text-xs font-bold uppercase tracking-widest mb-1">
-            {isLive ? "🔴 Live Now" : "📹 Upcoming Group Call"}
-          </p>
+          {isLive ? (
+            <p className="text-red-400 text-xs font-bold uppercase tracking-widest mb-1 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse inline-block" />
+              Live Now
+            </p>
+          ) : (
+            <p className="text-[#FF6B00] text-xs font-bold uppercase tracking-widest mb-1">
+              📹 Upcoming Group Call
+            </p>
+          )}
           <p className="text-white font-semibold text-sm truncate">{call.title}</p>
           {!isLive && timeLeft && (
             <div className="flex gap-3 mt-2">
@@ -88,9 +108,9 @@ export default function CallCountdown({ userName, isAdmin }: Props) {
         {isLive && (
           <button
             onClick={() => setShowCall(true)}
-            className="bg-[#FF6B00] hover:bg-[#e05e00] text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors duration-150 flex-shrink-0"
+            className="bg-red-600 hover:bg-red-500 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors duration-150 flex-shrink-0 animate-pulse"
           >
-            Join Now →
+            🔴 Join Now →
           </button>
         )}
       </div>

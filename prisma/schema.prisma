@@ -20,19 +20,20 @@ enum Room {
 }
 
 model User {
-  id                 String         @id @default(cuid())
+  id                 String           @id @default(cuid())
   name               String
-  email              String         @unique
+  email              String           @unique
   password           String
-  role               String         @default("student")
-  tier               Tier           @default(basic)
-  needsPasswordSetup Boolean        @default(false)
-  createdAt          DateTime       @default(now())
-  progress        Progress[]
-  messages        Message[]
-  announcements   Announcement[]
-  inviteUsed      InviteCode?     @relation("UsedBy")
-  progressEntries ProgressEntry[]
+  role               String           @default("student")
+  tier               Tier             @default(basic)
+  needsPasswordSetup Boolean          @default(false)
+  createdAt          DateTime         @default(now())
+  progress           Progress[]
+  messages           Message[]
+  announcements      Announcement[]
+  inviteUsed         InviteCode?      @relation("UsedBy")
+  progressEntries    ProgressEntry[]
+  groupCallInvites   GroupCallInvite[]
 }
 
 model InviteCode {
@@ -128,10 +129,23 @@ model Announcement {
 }
 
 model GroupCall {
-  id          String   @id @default(cuid())
-  title       String
-  scheduledAt DateTime
-  roomName    String   @unique
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
+  id           String           @id @default(cuid())
+  title        String
+  scheduledAt  DateTime
+  roomName     String           @unique
+  isActive     Boolean          @default(true)
+  startedAt    DateTime?
+  inviteAll    Boolean          @default(true)
+  createdAt    DateTime         @default(now())
+  invitedUsers GroupCallInvite[]
+}
+
+model GroupCallInvite {
+  id     String    @id @default(cuid())
+  callId String
+  userId String
+  call   GroupCall @relation(fields: [callId], references: [id], onDelete: Cascade)
+  user   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([callId, userId])
 }

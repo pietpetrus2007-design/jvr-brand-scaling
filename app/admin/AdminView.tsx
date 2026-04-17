@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
+import JitsiCall from "@/app/dashboard/JitsiCall"
 
 interface Resource { id: string; label: string; url: string; order: number }
 interface Lesson { id: string; title: string; description: string; videoUrl: string; slideUrl: string; slidePages: number; order: number; resources: Resource[] }
@@ -22,6 +23,8 @@ interface GroupCall {
   scheduledAt: string
   roomName: string
   isActive: boolean
+  startedAt: string | null
+  inviteAll: boolean
 }
 
 interface Props {
@@ -33,6 +36,7 @@ interface Props {
   announcements: Announcement[]
   trackerEntries: TrackerEntry[]
   calls: GroupCall[]
+  adminName: string
 }
 
 const TIER_BADGE: Record<string, string> = {
@@ -43,7 +47,7 @@ const TIER_BADGE: Record<string, string> = {
 
 type Tab = "modules" | "codes" | "students" | "announcements" | "tracker" | "calls"
 
-export default function AdminView({ modules: init, codes: initCodes, totalStudents, totalCompletions, students, announcements: initAnnouncements, trackerEntries: initTrackerEntries, calls: initCalls }: Props) {
+export default function AdminView({ modules: init, codes: initCodes, totalStudents, totalCompletions, students, announcements: initAnnouncements, trackerEntries: initTrackerEntries, calls: initCalls, adminName }: Props) {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>("modules")
   const [modules, setModules] = useState(init)
@@ -54,6 +58,18 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
   const [newCall, setNewCall] = useState({ title: "", scheduledAt: "" })
   const [schedulingCall, setSchedulingCall] = useState(false)
   const [trackerFilter, setTrackerFilter] = useState("")
+  // Instant call state
+  const [instantTitle, setInstantTitle] = useState("")
+  const [instantInviteAll, setInstantInviteAll] = useState(true)
+  const [instantSelectedIds, setInstantSelectedIds] = useState<Set<string>>(new Set())
+  const [instantStudentSearch, setInstantStudentSearch] = useState("")
+  const [startingInstant, setStartingInstant] = useState(false)
+  // Scheduled call invite state
+  const [schedInviteAll, setSchedInviteAll] = useState(true)
+  const [schedSelectedIds, setSchedSelectedIds] = useState<Set<string>>(new Set())
+  const [schedStudentSearch, setSchedStudentSearch] = useState("")
+  // Admin Jitsi modal
+  const [adminCall, setAdminCall] = useState<{ roomName: string } | null>(null)
   const [newAnnouncement, setNewAnnouncement] = useState({ title: "", content: "", imageUrl: "" })
   const [announcementImageFile, setAnnouncementImageFile] = useState<File | null>(null)
   const [announcementImagePreview, setAnnouncementImagePreview] = useState<string | null>(null)
@@ -191,12 +207,51 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
     const res = await fetch("/api/admin/calls", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newCall),
+      body: JSON.stringify({
+        title: newCall.title,
+        scheduledAt: newCall.scheduledAt,
+        inviteAll: schedInviteAll,
+        invitedUserIds: schedInviteAll ? [] : Array.from(schedSelectedIds),
+      }),
     })
     const created = await res.json()
     setCalls((prev) => [...prev, created])
     setNewCall({ title: "", scheduledAt: "" })
+    setSchedInviteAll(true)
+    setSchedSelectedIds(new Set())
     setSchedulingCall(false)
+  }
+
+  async function startInstantCall() {
+    setStartingInstant(true)
+    const res = await fetch("/api/admin/calls", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: instantTitle.trim() || "Live Group Call",
+        startNow: true,
+        inviteAll: instantInviteAll,
+        invitedUserIds: instantInviteAll ? [] : Array.from(instantSelectedIds),
+      }),
+    })
+    const created = await res.json()
+    setCalls((prev) => [...prev, created])
+    setInstantTitle("")
+    setInstantInviteAll(true)
+    setInstantSelectedIds(new Set())
+    setStartingInstant(false)
+    setAdminCall({ roomName: created.roomName })
+  }
+
+  async function startScheduledCall(id: string) {
+    const res = await fetch(`/api/admin/calls/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "start" }),
+    })
+    const updated = await res.json()
+    setCalls((prev) => prev.map((c) => c.id === id ? { ...c, startedAt: updated.startedAt } : c))
+    setAdminCall({ roomName: updated.roomName })
   }
 
   async function cancelCall(id: string) {
@@ -219,7 +274,74 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
 
   const inputCls = "bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#FF6B00] transition-colors duration-150"
 
+  function StudentSelector({
+    search, setSearch, selectedIds, setSelectedIds,
+  }: {
+    search: string
+    setSearch: (v: string) => void
+    selectedIds: Set<string>
+    setSelectedIds: (fn: (prev: Set<string>) => Set<string>) => void
+  }) {
+    const filtered = students.filter(
+      (s) =>
+        s.name.toLowerCase().includes(search.toLowerCase()) ||
+        s.email.toLowerCase().includes(search.toLowerCase())
+    )
+    function toggle(id: string) {
+      setSelectedIds((prev) => {
+        const next = new Set(prev)
+        if (next.has(id)) next.delete(id)
+        else next.add(id)
+        return next
+      })
+    }
+    return (
+      <div className="border border-white/10 rounded-xl overflow-hidden">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search students..."
+          className="w-full bg-white/5 px-3 py-2 text-white text-sm focus:outline-none border-b border-white/10"
+        />
+        <div className="max-h-48 overflow-y-auto divide-y divide-white/5">
+          {filtered.length === 0 && (
+            <p className="px-3 py-4 text-[#555] text-sm text-center">No students found.</p>
+          )}
+          {filtered.map((s) => (
+            <label key={s.id} className="flex items-center gap-3 px-3 py-2 hover:bg-white/5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={selectedIds.has(s.id)}
+                onChange={() => toggle(s.id)}
+                className="accent-[#FF6B00]"
+              />
+              <span className="flex-1 min-w-0">
+                <span className="text-white text-sm font-medium">{s.name}</span>
+                <span className="text-[#555] text-xs ml-2">{s.email}</span>
+              </span>
+              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold capitalize ${TIER_BADGE[s.tier]}`}>{s.tier}</span>
+            </label>
+          ))}
+        </div>
+        {selectedIds.size > 0 && (
+          <p className="px-3 py-1.5 text-xs text-[#FF6B00] border-t border-white/10 bg-white/2">
+            {selectedIds.size} student{selectedIds.size !== 1 ? "s" : ""} selected
+          </p>
+        )}
+      </div>
+    )
+  }
+
   return (
+    <>
+      {adminCall && (
+        <JitsiCall
+          roomName={adminCall.roomName}
+          userName={adminName}
+          isAdmin={true}
+          onClose={() => setAdminCall(null)}
+        />
+      )}
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
       {/* Header + stats */}
       <div className="flex items-start justify-between flex-wrap gap-4">
@@ -568,9 +690,53 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
       {/* Calls tab */}
       {tab === "calls" && (
         <div className="space-y-6">
+          {/* Instant Call */}
+          <div className="bg-[#0a0a0a] border border-[#FF6B00]/30 rounded-2xl p-6 space-y-4">
+            <h2 className="text-white font-bold flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse inline-block" />
+              Start Instant Call
+            </h2>
+            <input
+              value={instantTitle}
+              onChange={(e) => setInstantTitle(e.target.value)}
+              placeholder='Title (optional, default "Live Group Call")'
+              className={`w-full ${inputCls}`}
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => setInstantInviteAll(true)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors duration-150 ${instantInviteAll ? "bg-[#FF6B00] text-white" : "bg-white/5 text-[#888] hover:text-white"}`}
+              >
+                All Students
+              </button>
+              <button
+                onClick={() => setInstantInviteAll(false)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors duration-150 ${!instantInviteAll ? "bg-[#FF6B00] text-white" : "bg-white/5 text-[#888] hover:text-white"}`}
+              >
+                Select Students
+              </button>
+            </div>
+            {!instantInviteAll && (
+              <StudentSelector
+                search={instantStudentSearch}
+                setSearch={setInstantStudentSearch}
+                selectedIds={instantSelectedIds}
+                setSelectedIds={setInstantSelectedIds}
+              />
+            )}
+            <button
+              onClick={startInstantCall}
+              disabled={startingInstant || (!instantInviteAll && instantSelectedIds.size === 0)}
+              className="bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors duration-150"
+            >
+              {startingInstant ? "Starting..." : "Start Call Now"}
+            </button>
+          </div>
+
+          {/* Schedule Call */}
           <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-6 space-y-4">
             <h2 className="text-white font-bold">Schedule Group Call</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <input
                 value={newCall.title}
                 onChange={(e) => setNewCall((p) => ({ ...p, title: e.target.value }))}
@@ -583,14 +749,36 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
                 onChange={(e) => setNewCall((p) => ({ ...p, scheduledAt: e.target.value }))}
                 className={inputCls}
               />
+            </div>
+            <div className="flex gap-3">
               <button
-                onClick={scheduleCall}
-                disabled={!newCall.title.trim() || !newCall.scheduledAt || schedulingCall}
-                className="bg-[#FF6B00] hover:bg-[#e05e00] disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-colors duration-150 px-4 py-2.5"
+                onClick={() => setSchedInviteAll(true)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors duration-150 ${schedInviteAll ? "bg-[#FF6B00] text-white" : "bg-white/5 text-[#888] hover:text-white"}`}
               >
-                {schedulingCall ? "Scheduling..." : "Schedule Call"}
+                All Students
+              </button>
+              <button
+                onClick={() => setSchedInviteAll(false)}
+                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors duration-150 ${!schedInviteAll ? "bg-[#FF6B00] text-white" : "bg-white/5 text-[#888] hover:text-white"}`}
+              >
+                Select Students
               </button>
             </div>
+            {!schedInviteAll && (
+              <StudentSelector
+                search={schedStudentSearch}
+                setSearch={setSchedStudentSearch}
+                selectedIds={schedSelectedIds}
+                setSelectedIds={setSchedSelectedIds}
+              />
+            )}
+            <button
+              onClick={scheduleCall}
+              disabled={!newCall.title.trim() || !newCall.scheduledAt || schedulingCall || (!schedInviteAll && schedSelectedIds.size === 0)}
+              className="bg-[#FF6B00] hover:bg-[#e05e00] disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-colors duration-150 px-4 py-2.5"
+            >
+              {schedulingCall ? "Scheduling..." : "Schedule Call"}
+            </button>
           </div>
 
           {calls.length === 0 ? (
@@ -602,6 +790,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
                   <tr className="border-b border-white/8 text-[#888] text-xs uppercase tracking-wider">
                     <th className="text-left px-4 py-3">Title</th>
                     <th className="text-left px-4 py-3">Scheduled</th>
+                    <th className="text-left px-4 py-3">Status</th>
                     <th className="text-left px-4 py-3">Room</th>
                     <th className="text-left px-4 py-3"></th>
                   </tr>
@@ -611,8 +800,34 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
                     <tr key={c.id} className="hover:bg-white/3 transition-colors duration-150">
                       <td className="px-4 py-3 text-white font-semibold">{c.title}</td>
                       <td className="px-4 py-3 text-[#888] text-xs">{new Date(c.scheduledAt).toLocaleString()}</td>
-                      <td className="px-4 py-3 text-[#555] text-xs font-mono">{c.roomName}</td>
                       <td className="px-4 py-3">
+                        {c.startedAt ? (
+                          <span className="flex items-center gap-1.5 text-red-400 text-xs font-semibold">
+                            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                            Live
+                          </span>
+                        ) : (
+                          <span className="text-[#555] text-xs">Scheduled</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-[#555] text-xs font-mono">{c.roomName}</td>
+                      <td className="px-4 py-3 flex items-center gap-3">
+                        {!c.startedAt && (
+                          <button
+                            onClick={() => startScheduledCall(c.id)}
+                            className="text-[#FF6B00] hover:text-white text-xs font-semibold transition-colors duration-150"
+                          >
+                            Start Now
+                          </button>
+                        )}
+                        {c.startedAt && (
+                          <button
+                            onClick={() => setAdminCall({ roomName: c.roomName })}
+                            className="text-green-400 hover:text-green-300 text-xs font-semibold transition-colors duration-150"
+                          >
+                            Join
+                          </button>
+                        )}
                         <button
                           onClick={() => cancelCall(c.id)}
                           className="text-red-400 hover:text-red-300 text-xs transition-colors duration-150"
@@ -711,5 +926,6 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
         </div>
       )}
     </div>
+    </>
   )
 }

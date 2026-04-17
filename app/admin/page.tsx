@@ -58,6 +58,7 @@ export default async function AdminPage() {
       announcements={announcements as any}
       trackerEntries={trackerEntries as any}
       calls={calls as any}
+      adminName={session.user.name ?? "Admin"}
     />
   )
 }

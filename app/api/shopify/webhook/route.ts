@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
       if (TIER_ORDER[tier] > TIER_ORDER[existingUser.tier]) {
         await prisma.user.update({
           where: { email },
-          data: { tier: tier as "basic" | "community" | "mentorship" },
+          data: { tier: tier as "basic" | "community" | "mentorship", tierUpdatedAt: new Date() },
         })
 
         // Send upgrade confirmation email

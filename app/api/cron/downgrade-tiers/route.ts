@@ -17,9 +17,9 @@ export async function POST(req: NextRequest) {
   const { count: mentorshipDowngraded } = await prisma.user.updateMany({
     where: {
       tier: 'mentorship',
-      createdAt: { lt: mentorshipCutoff }
+      tierUpdatedAt: { lt: mentorshipCutoff }
     },
-    data: { tier: 'community' }
+    data: { tier: 'community', tierUpdatedAt: new Date() }
   })
 
   // Community → Basic (after 3 months)
@@ -29,9 +29,9 @@ export async function POST(req: NextRequest) {
   const { count: communityDowngraded } = await prisma.user.updateMany({
     where: {
       tier: 'community',
-      createdAt: { lt: communityCutoff }
+      tierUpdatedAt: { lt: communityCutoff }
     },
-    data: { tier: 'basic' }
+    data: { tier: 'basic', tierUpdatedAt: new Date() }
   })
 
   return NextResponse.json({ mentorshipDowngraded, communityDowngraded })

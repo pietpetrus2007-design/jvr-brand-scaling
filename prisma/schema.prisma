@@ -27,6 +27,7 @@ model User {
   role               String           @default("student")
   tier               Tier             @default(basic)
   needsPasswordSetup Boolean          @default(false)
+  tierUpdatedAt      DateTime         @default(now())
   createdAt          DateTime         @default(now())
   progress           Progress[]
   messages           Message[]

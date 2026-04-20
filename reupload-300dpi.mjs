@@ -74,7 +74,7 @@ for (const [num, fname] of Object.entries(fileMap).sort()) {
     const pdf = readdirSync(TMP).find(f => f.endsWith('.pdf'))
     if (!pdf) throw new Error('No PDF')
 
-    execSync(`gs -dBATCH -dNOPAUSE -sDEVICE=png16m -r300 -sOutputFile="${TMP}/slide-%03d.png" "${TMP}/${pdf}"`, { timeout: 120000 })
+    execSync(`gs -dBATCH -dNOPAUSE -sDEVICE=png16m -r400 -dTextAlphaBits=4 -dGraphicsAlphaBits=4 -sOutputFile="${TMP}/slide-%03d.png" "${TMP}/${pdf}"`, { timeout: 120000 })
 
     const slides = readdirSync(TMP).filter(f => f.endsWith('.png')).sort()
     if (!slides.length) throw new Error('No PNGs')

@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth"
 import { redirect } from "next/navigation"
 import DashboardNav from "./DashboardNav"
 import CallCountdown from "./CallCountdown"
+import LaunchCountdown from "./LaunchCountdown"
 import InstallBanner from "../InstallBanner"
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -13,6 +14,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div className="min-h-screen bg-black flex flex-col">
       <DashboardNav user={user} />
+      <LaunchCountdown isAdmin={user.role === "admin"} />
       <CallCountdown userName={user.name ?? user.email ?? "Student"} isAdmin={user.role === "admin"} />
       <main className="flex-1">{children}</main>
       <InstallBanner />

@@ -164,7 +164,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
             <ul className="space-y-1.5 text-xs text-[#888] mb-4">
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Everything in Community</li>
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> 1-on-1 chat with JvR</li>
-              <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> 3 months mentorship</li>
+              <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> 1 month mentorship</li>
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Personal strategy</li>
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Direct DM access</li>
             </ul>

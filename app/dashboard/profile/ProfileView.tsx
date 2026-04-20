@@ -139,7 +139,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Weekly group calls</li>
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> 3 months access</li>
               <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> 1-on-1 with JvR</li>
-              <li className="flex items-center gap-1.5 text-[#666] italic">Downgrades to Basic after 3 months</li>
+
             </ul>
             {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['community'] && (
               <a href={getUpgradeUrl(currentTier, 'community', email)} target="_blank" rel="noopener noreferrer"
@@ -169,7 +169,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> 1 month mentorship access</li>
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Personal strategy</li>
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Direct DM access</li>
-              <li className="flex items-center gap-1.5 text-[#666] italic">Downgrades to Community after 1 month, Basic after 3 months</li>
+
             </ul>
             {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['mentorship'] && (
               <a href={getUpgradeUrl(currentTier, 'mentorship', email)} target="_blank" rel="noopener noreferrer"

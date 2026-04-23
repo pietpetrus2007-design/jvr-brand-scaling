@@ -19,7 +19,7 @@ export default async function TrackerPage() {
     }),
   ])
 
-  const allUnlocked = completedCount >= totalLessons && totalLessons > 0
+  const allUnlocked = true // Open to everyone
   const pct = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0
 
   return (

@@ -193,7 +193,8 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
           }
           return acc
         }, {} as Record<string, StudentThread>)
-      ).sort((a, b) => new Date(b.lastTime).getTime() - new Date(a.lastTime).getTime())
+      ).filter((s) => s.tier === 'mentorship')
+      .sort((a, b) => new Date(b.lastTime).getTime() - new Date(a.lastTime).getTime())
     : []
 
   // Filter messages for selected student thread

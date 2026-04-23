@@ -238,7 +238,7 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
                     ? "bg-[#FF6B00]/12 text-white border border-[#FF6B00]/30 shadow-[0_0_15px_rgba(255,107,0,0.12)]"
                     : accessible
                     ? "text-[#888] hover:bg-white/5 hover:text-white"
-                    : "text-[#666] hover:bg-white/5 cursor-pointer"
+                    : "text-white/70 hover:bg-white/5 hover:text-white cursor-pointer"
                 }`}
               >
                 {isActive && (

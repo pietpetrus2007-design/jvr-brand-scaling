@@ -35,6 +35,7 @@ model User {
   inviteUsed         InviteCode?      @relation("UsedBy")
   progressEntries    ProgressEntry[]
   groupCallInvites   GroupCallInvite[]
+  callRequests       CallRequest[]
 }
 
 model InviteCode {
@@ -139,6 +140,17 @@ model GroupCall {
   inviteAll    Boolean          @default(true)
   createdAt    DateTime         @default(now())
   invitedUsers GroupCallInvite[]
+}
+
+model CallRequest {
+  id            String   @id @default(cuid())
+  userId        String
+  topic         String
+  message       String
+  preferredTime String
+  status        String   @default("pending") // pending | confirmed | done
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model GroupCallInvite {

@@ -29,6 +29,7 @@ export default function DashboardNav({ user }: Props) {
     { href: "/dashboard/tracker", label: "Tracker", icon: "📊" },
     { href: "/dashboard/ask", label: "Ask AI", icon: "🤖" },
     { href: "/dashboard/announcements", label: "Announcements", icon: "📢" },
+    { href: "/dashboard/mentorship", label: "Mentorship", icon: "🎯" },
     { href: "/dashboard/profile", label: "Profile", icon: "👤" },
     ...(user.role === "admin" ? [{ href: "/admin", label: "Admin", icon: "⚙️" }] : []),
   ]

@@ -27,6 +27,11 @@ interface GroupCall {
   inviteAll: boolean
 }
 
+interface CallReq {
+  id: string; topic: string; message: string; preferredTime: string; status: string; createdAt: string
+  user: { name: string; email: string }
+}
+
 interface Props {
   modules: Module[]
   codes: InviteCode[]
@@ -36,6 +41,7 @@ interface Props {
   announcements: Announcement[]
   trackerEntries: TrackerEntry[]
   calls: GroupCall[]
+  callRequests: CallReq[]
   adminName: string
 }
 
@@ -45,9 +51,9 @@ const TIER_BADGE: Record<string, string> = {
   mentorship: "bg-[#FF6B00]/15 text-[#FF6B00]",
 }
 
-type Tab = "modules" | "codes" | "students" | "announcements" | "tracker" | "calls"
+type Tab = "modules" | "codes" | "students" | "announcements" | "tracker" | "calls" | "call-requests"
 
-export default function AdminView({ modules: init, codes: initCodes, totalStudents, totalCompletions, students, announcements: initAnnouncements, trackerEntries: initTrackerEntries, calls: initCalls, adminName }: Props) {
+export default function AdminView({ modules: init, codes: initCodes, totalStudents, totalCompletions, students, announcements: initAnnouncements, trackerEntries: initTrackerEntries, calls: initCalls, callRequests: initCallRequests, adminName }: Props) {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>("modules")
   const [modules, setModules] = useState(init)
@@ -55,6 +61,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
   const [announcements, setAnnouncements] = useState(initAnnouncements)
   const [trackerEntries] = useState(initTrackerEntries)
   const [calls, setCalls] = useState(initCalls)
+  const [callRequests, setCallRequests] = useState<CallReq[]>(initCallRequests)
   const [newCall, setNewCall] = useState({ title: "", scheduledAt: "" })
   const [schedulingCall, setSchedulingCall] = useState(false)
   const [trackerFilter, setTrackerFilter] = useState("")
@@ -360,7 +367,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
 
       {/* Tabs */}
       <div className="flex gap-1 bg-white/5 border border-white/8 p-1 rounded-xl w-fit flex-wrap">
-        {(["modules", "codes", "students", "announcements", "tracker", "calls"] as Tab[]).map((t) => (
+        {(["modules", "codes", "students", "announcements", "tracker", "calls", "call-requests"] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -919,6 +926,49 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
                   >
                     Delete
                   </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      {/* Call Requests tab */}
+      {tab === "call-requests" && (
+        <div className="space-y-4">
+          <h2 className="text-white font-bold text-lg">Private Call Requests</h2>
+          {callRequests.length === 0 ? (
+            <p className="text-[#555] text-sm text-center py-8">No call requests yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {callRequests.map((r) => (
+                <div key={r.id} className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-start gap-4">
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-white font-bold text-sm">{r.topic}</p>
+                      <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold capitalize ${
+                        r.status === 'pending' ? 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30' :
+                        r.status === 'confirmed' ? 'bg-blue-500/15 text-blue-400 border-blue-500/30' :
+                        'bg-green-500/15 text-green-400 border-green-500/30'
+                      }`}>{r.status}</span>
+                    </div>
+                    <p className="text-[#aaa] text-xs">{r.user.name} — {r.user.email}</p>
+                    <p className="text-[#888] text-sm mt-1">{r.message}</p>
+                    <p className="text-[#555] text-xs">⏰ {r.preferredTime} &nbsp;·&nbsp; {new Date(r.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <div className="flex gap-2 flex-shrink-0">
+                    {r.status !== 'confirmed' && (
+                      <button onClick={async () => {
+                        await fetch('/api/admin/call-requests', { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: r.id, status: 'confirmed' }) })
+                        setCallRequests(prev => prev.map(x => x.id === r.id ? {...x, status: 'confirmed'} : x))
+                      }} className="text-xs bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 px-3 py-1.5 rounded-lg font-semibold transition-colors">Confirm</button>
+                    )}
+                    {r.status !== 'done' && (
+                      <button onClick={async () => {
+                        await fetch('/api/admin/call-requests', { method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id: r.id, status: 'done' }) })
+                        setCallRequests(prev => prev.map(x => x.id === r.id ? {...x, status: 'done'} : x))
+                      }} className="text-xs bg-green-500/20 text-green-400 hover:bg-green-500/30 px-3 py-1.5 rounded-lg font-semibold transition-colors">Done</button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

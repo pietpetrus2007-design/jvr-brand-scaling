@@ -16,6 +16,7 @@ export default function LessonQA({ lessonTitle, moduleTitle }: Props) {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
+  const [locked, setLocked] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   // Clear when lesson changes
@@ -43,6 +44,12 @@ export default function LessonQA({ lessonTitle, moduleTitle }: Props) {
           history: messages
         })
       })
+      if (res.status === 403) {
+        setLocked(true)
+        setMessages([])
+        setLoading(false)
+        return
+      }
       const data = await res.json()
       setMessages(prev => [...prev, { role: "assistant", content: data.answer || data.error || "Sorry, something went wrong." }])
     } catch {
@@ -53,6 +60,20 @@ export default function LessonQA({ lessonTitle, moduleTitle }: Props) {
 
   function onKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send() }
+  }
+
+  if (locked) {
+    return (
+      <div className="mt-6 border-t border-white/8 pt-6">
+        <h3 className="text-white font-bold text-sm mb-4 flex items-center gap-2">
+          🤖 Questions about this lesson?
+        </h3>
+        <div className="bg-[#111] border border-white/8 rounded-xl p-4 text-center">
+          <p className="text-[#888] text-sm mb-3">The AI assistant is available for Community and Mentorship members.</p>
+          <a href="https://brandscaling.co.za/products/upgrade-from-basic-to-community" className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-colors">Upgrade to Community →</a>
+        </div>
+      </div>
+    )
   }
 
   return (

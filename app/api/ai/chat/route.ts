@@ -42,6 +42,11 @@ const client = new Anthropic()
 export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  const userTier = (session.user as any).tier
+  const userRole = (session.user as any).role
+  if (!['community', 'mentorship'].includes(userTier) && userRole !== 'admin') {
+    return NextResponse.json({ error: "AI assistant is available for Community and Mentorship members only." }, { status: 403 })
+  }
 
   let question: string
   let lessonContext: string | undefined

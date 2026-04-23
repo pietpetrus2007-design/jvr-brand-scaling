@@ -134,10 +134,10 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
             </div>
             <ul className="space-y-1.5 text-xs text-[#888] mb-4">
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Everything in Basic</li>
-              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> All community chats</li>
-              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Q&amp;A room access</li>
+              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> All community chat rooms</li>
+              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Announcements from JvR</li>
+              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> AI chat assistant</li>
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Weekly group calls</li>
-              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> 3 months access</li>
               <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> 1-on-1 with JvR</li>
 
             </ul>

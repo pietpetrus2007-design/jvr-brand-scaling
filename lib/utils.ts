@@ -15,20 +15,27 @@ export const UPGRADE_VARIANT_IDS: Record<string, Record<string, string>> = {
   },
 }
 
+export const UPGRADE_PRODUCT_URLS: Record<string, Record<string, string>> = {
+  basic: {
+    community: "https://brandscaling.co.za/products/upgrade-from-basic-to-community",
+    mentorship: "https://brandscaling.co.za/products/upgrade-from-basic-to-mentorship",
+  },
+  community: {
+    mentorship: "https://brandscaling.co.za/products/upgrade-from-community-to-mentorship",
+  },
+}
+
 export function getUpgradeUrl(fromTier: string, toTier: string, email?: string): string {
-  const variantId = UPGRADE_VARIANT_IDS[fromTier]?.[toTier]
-  if (!variantId) return "https://brandscaling.co.za"
-  const base = `https://jvr-8226.myshopify.com/cart/${variantId}:1`
-  return email ? `${base}?checkout[email]=${encodeURIComponent(email)}` : base
+  return UPGRADE_PRODUCT_URLS[fromTier]?.[toTier] ?? "https://brandscaling.co.za"
 }
 
 // Keep for backwards compatibility
 export const UPGRADE_LINKS: Record<string, Record<string, string>> = {
   basic: {
-    community: "https://jvr-8226.myshopify.com/cart/47713009336485:1",
-    mentorship: "https://jvr-8226.myshopify.com/cart/47712428982437:1",
+    community: "https://brandscaling.co.za/products/upgrade-from-basic-to-community",
+    mentorship: "https://brandscaling.co.za/products/upgrade-from-basic-to-mentorship",
   },
   community: {
-    mentorship: "https://jvr-8226.myshopify.com/cart/47712430063781:1",
+    mentorship: "https://brandscaling.co.za/products/upgrade-from-community-to-mentorship",
   },
 }

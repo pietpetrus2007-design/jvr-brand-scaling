@@ -238,7 +238,7 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
                     ? "bg-[#FF6B00]/12 text-white border border-[#FF6B00]/30 shadow-[0_0_15px_rgba(255,107,0,0.12)]"
                     : accessible
                     ? "text-[#888] hover:bg-white/5 hover:text-white"
-                    : "text-[#444] cursor-not-allowed"
+                    : "text-[#666] hover:bg-white/5 cursor-pointer"
                 }`}
               >
                 {isActive && (
@@ -247,7 +247,7 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
                 <span className="text-base">{room.icon}</span>
                 <span className="flex-1 truncate font-medium">{room.label}</span>
                 {!accessible && (
-                  <svg className="w-3.5 h-3.5 text-[#444]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg className="w-3.5 h-3.5 text-[#888]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                 )}

@@ -146,8 +146,8 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
             </ul>
             {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['community'] && (
               <a href={getUpgradeUrl(currentTier, 'community', email)} target="_blank" rel="noopener noreferrer"
-                className="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white font-bold text-xs py-2 rounded-lg transition-colors">
-                Upgrade Now →
+                className="block w-full text-center bg-blue-500 hover:bg-blue-400 text-white font-bold text-xs py-2.5 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] active:scale-95">
+                ⚡ Upgrade Now →
               </a>
             )}
           </div>
@@ -176,8 +176,8 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
             </ul>
             {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['mentorship'] && (
               <a href={getUpgradeUrl(currentTier, 'mentorship', email)} target="_blank" rel="noopener noreferrer"
-                className="block w-full text-center bg-[#FF6B00] hover:bg-[#e05e00] text-white font-bold text-xs py-2 rounded-lg transition-colors">
-                Upgrade Now →
+                className="block w-full text-center bg-[#FF6B00] hover:bg-[#ff8534] text-white font-bold text-xs py-2.5 rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-[0_0_20px_rgba(255,107,0,0.6)] active:scale-95">
+                ⚡ Upgrade Now →
               </a>
             )}
           </div>

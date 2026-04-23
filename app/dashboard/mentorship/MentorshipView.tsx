@@ -60,19 +60,6 @@ export default function MentorshipView({ initialRequests }: Props) {
         <p className="text-[#888] text-sm mt-1">You have direct access to JvR. Use it.</p>
       </div>
 
-      {/* What's included */}
-      <div className="bg-[#FF6B00]/8 border border-[#FF6B00]/20 rounded-2xl p-5 space-y-3">
-        <h2 className="text-white font-bold text-sm uppercase tracking-widest text-[#FF6B00]">What's Included</h2>
-        <ul className="space-y-2 text-sm text-[#ccc]">
-          <li className="flex items-start gap-2"><span className="text-[#FF6B00] mt-0.5">✓</span> Full course access (Part 1, 2 & 3)</li>
-          <li className="flex items-start gap-2"><span className="text-[#FF6B00] mt-0.5">✓</span> Community chat rooms (Wins, Q&A, Just Chatting)</li>
-          <li className="flex items-start gap-2"><span className="text-[#FF6B00] mt-0.5">✓</span> AI assistant — lesson Q&A and general help</li>
-          <li className="flex items-start gap-2"><span className="text-[#FF6B00] mt-0.5">✓</span> Group calls with JvR</li>
-          <li className="flex items-start gap-2"><span className="text-[#FF6B00] mt-0.5">✓</span> 1-on-1 chat with JvR</li>
-          <li className="flex items-start gap-2"><span className="text-[#FF6B00] mt-0.5">✓</span> Private call requests — get direct time with JvR</li>
-        </ul>
-      </div>
-
       {/* Request a call */}
       <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-5">
         <h2 className="text-white font-bold text-base mb-1">Request a Private Call</h2>

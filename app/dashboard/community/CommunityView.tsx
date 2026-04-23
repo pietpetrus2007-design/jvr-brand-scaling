@@ -283,9 +283,9 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
                 href={getUpgradeLink(currentRoom)!}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-[#FF6B00] hover:bg-[#e05e00] text-white font-bold px-8 py-3.5 rounded-xl text-sm transition-colors duration-150 shadow-[0_0_30px_rgba(255,107,0,0.35)]"
+                className="bg-[#FF6B00] hover:bg-[#ff8534] text-white font-bold px-8 py-3.5 rounded-xl text-sm transition-all duration-200 hover:scale-105 hover:shadow-[0_0_30px_rgba(255,107,0,0.6)] active:scale-95"
               >
-                Upgrade Now →
+                ⚡ Upgrade Now →
               </a>
             )}
           </div>

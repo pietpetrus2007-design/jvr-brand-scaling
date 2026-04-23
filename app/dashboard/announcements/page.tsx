@@ -18,7 +18,7 @@ export default async function AnnouncementsPage() {
         <div className="text-3xl mb-4">📢</div>
         <h2 className="text-white font-black text-2xl mb-2">Announcements</h2>
         <p className="text-[#888] text-sm mb-6 max-w-sm">Announcements are available for Community and Mentorship members. Upgrade to stay in the loop.</p>
-        <a href="https://brandscaling.co.za/products/upgrade-from-basic-to-community" className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors">Upgrade to Community →</a>
+        <a href="https://brandscaling.co.za/products/upgrade-from-basic-to-community" className="bg-blue-500 hover:bg-blue-400 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all duration-200 hover:scale-105 hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] active:scale-95">⚡ Upgrade to Community →</a>
       </div>
     )
   }

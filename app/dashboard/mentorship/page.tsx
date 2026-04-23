@@ -22,9 +22,9 @@ export default async function MentorshipPage() {
           href={tier === "community"
             ? "https://brandscaling.co.za/products/upgrade-from-community-to-mentorship"
             : "https://brandscaling.co.za/products/upgrade-from-basic-to-mentorship"}
-          className="bg-[#FF6B00] hover:bg-[#e05e00] text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors"
+          className="bg-[#FF6B00] hover:bg-[#ff8534] text-white font-bold px-6 py-3 rounded-xl text-sm transition-all duration-200 hover:scale-105 hover:shadow-[0_0_20px_rgba(255,107,0,0.6)] active:scale-95"
         >
-          Upgrade to Mentorship →
+          ⚡ Upgrade to Mentorship →
         </a>
       </div>
     )

@@ -6,6 +6,7 @@ import { signOut } from "next-auth/react"
 
 interface Props {
   user: { name?: string | null; email?: string | null; role?: string; tier?: string }
+  hasUnreadAnnouncements?: boolean
 }
 
 const TIER_STYLES: Record<string, string> = {
@@ -20,15 +21,15 @@ const AVATAR_STYLES: Record<string, string> = {
   mentorship: "bg-[#FF6B00]/20 border-[#FF6B00]/30 text-[#FF6B00]",
 }
 
-export default function DashboardNav({ user }: Props) {
+export default function DashboardNav({ user, hasUnreadAnnouncements }: Props) {
   const pathname = usePathname()
 
-  const links = [
+  const links: { href: string; label: string; icon: string; unread?: boolean }[] = [
     { href: "/dashboard", label: "Course", icon: "📚" },
     { href: "/dashboard/community", label: "Community", icon: "💬" },
     { href: "/dashboard/tracker", label: "Tracker", icon: "📊" },
     { href: "/dashboard/ask", label: "Ask AI", icon: "🤖" },
-    { href: "/dashboard/announcements", label: "Announcements", icon: "📢" },
+    { href: "/dashboard/announcements", label: "Announcements", icon: "📢", unread: hasUnreadAnnouncements },
     { href: "/dashboard/mentorship", label: "Mentorship", icon: "🎯" },
     { href: "/dashboard/profile", label: "Profile", icon: "👤" },
     ...(user.role === "admin" ? [{ href: "/admin", label: "Admin", icon: "⚙️" }] : []),
@@ -60,7 +61,10 @@ export default function DashboardNav({ user }: Props) {
                       : "text-[#888] hover:text-white hover:bg-white/5"
                   }`}
                 >
-                  <span className="mr-1">{l.icon}</span>{l.label}
+                  <span className="relative inline-flex items-center gap-1">
+                    <span className="mr-1">{l.icon}</span>{l.label}
+                    {l.unread && <span className="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-red-500" />}
+                  </span>
                 </Link>
               )
             })}
@@ -104,7 +108,10 @@ export default function DashboardNav({ user }: Props) {
                 isActive ? "text-[#FF6B00] border-b-2 border-[#FF6B00]" : "text-[#888]"
               }`}
             >
-              <span className="text-base">{l.icon}</span>
+              <span className="relative">
+                <span className="text-base">{l.icon}</span>
+                {l.unread && <span className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-red-500" />}
+              </span>
               <span className="text-[10px] mt-0.5">{l.label}</span>
             </Link>
           )

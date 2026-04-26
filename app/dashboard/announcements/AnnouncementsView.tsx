@@ -1,4 +1,5 @@
 "use client"
+import { useEffect } from "react"
 
 interface Announcement {
   id: string
@@ -22,6 +23,10 @@ function formatDate(iso: string) {
 }
 
 export default function AnnouncementsView({ announcements }: Props) {
+  useEffect(() => {
+    fetch('/api/announcements/seen', { method: 'POST' })
+  }, [])
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
       <div className="mb-10">

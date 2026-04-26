@@ -132,7 +132,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               <span className="text-blue-400 font-bold text-sm">Community</span>
               {currentTier === 'community' && <span className="inline-block mt-1 text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
               {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['community'] && (
-                <p className="text-blue-400 text-xs font-semibold mt-1">+R2,000 to upgrade</p>
+                <p className="text-blue-400 text-xs font-semibold mt-1">+R1,999 to upgrade</p>
               )}
             </div>
             <ul className="space-y-1.5 text-xs text-[#888] mb-4">
@@ -162,7 +162,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               {currentTier === 'mentorship' && <span className="inline-block mt-1 text-xs bg-[#FF6B00]/20 text-[#FF6B00] px-2 py-0.5 rounded-full font-semibold">YOUR PLAN</span>}
               {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['mentorship'] && (
                 <p className="text-[#FF6B00] text-xs font-semibold mt-1">
-                  {currentTier === 'basic' ? '+R6,000 to upgrade' : '+R4,000 to upgrade'}
+                  {currentTier === 'basic' ? '+R5,999 to upgrade' : '+R3,999 to upgrade'}
                 </p>
               )}
             </div>

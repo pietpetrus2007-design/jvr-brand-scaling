@@ -106,15 +106,7 @@ export default function LoginPage() {
               Get Access →
             </a>
           </div>
-          <div className="bg-[#FF6B00]/8 border border-[#FF6B00]/25 rounded-xl px-5 py-4 flex items-center justify-between hover:border-[#FF6B00]/45 transition-colors duration-150">
-            <span className="text-sm text-[#aaa]">Have an invite code?</span>
-            <Link
-              href="/register"
-              className="text-sm text-[#FF6B00] font-bold hover:text-[#ff8533] transition-colors duration-150 flex items-center gap-1"
-            >
-              Register here →
-            </Link>
-          </div>
+
         </div>
       </div>
     </div>

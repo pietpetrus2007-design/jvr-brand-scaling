@@ -142,6 +142,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> AI chat assistant</li>
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Weekly group calls</li>
               <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> 1-on-1 with JvR</li>
+              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> 3 months access</li>
 
             </ul>
             {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['community'] && (

@@ -287,6 +287,12 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
                 {selectedLesson.description && (
                   <p className="text-[#888] leading-relaxed">{selectedLesson.description}</p>
                 )}
+                {selectedModule && (
+                  <LessonQA
+                    lessonTitle={selectedLesson.title}
+                    moduleTitle={selectedModule.title}
+                  />
+                )}
                 <button
                   onClick={() => markComplete(selectedLesson.id)}
                   disabled={completedIds.has(selectedLesson.id) || completing}
@@ -302,12 +308,6 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
                     ? "Saving..."
                     : "Mark as Complete"}
                 </button>
-                {selectedModule && (
-                  <LessonQA
-                    lessonTitle={selectedLesson.title}
-                    moduleTitle={selectedModule.title}
-                  />
-                )}
               </div>
             </div>
           ) : (

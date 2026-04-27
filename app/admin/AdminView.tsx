@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import JitsiCall from "@/app/dashboard/JitsiCall"
 
@@ -53,9 +53,71 @@ const TIER_BADGE: Record<string, string> = {
 
 type Tab = "modules" | "codes" | "students" | "announcements" | "tracker" | "calls" | "call-requests"
 
+function StudentDetail({ student, onBack }: { student: Student; onBack: () => void }) {
+  const [stats, setStats] = useState<{ revenue: number; payments: number; wins: {id:string;paymentsValue:number;paymentsReceived:number;notes:string|null;createdAt:string}[] } | null>(null)
+
+  useEffect(() => {
+    fetch(`/api/admin/student-stats/${student.id}`).then(r => r.json()).then(setStats)
+  }, [student.id])
+
+  return (
+    <div className="space-y-4">
+      <button onClick={onBack} className="text-[#888] hover:text-white text-sm flex items-center gap-1 transition-colors">← Back to students</button>
+      <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-6 space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-white font-bold text-xl">{student.name}</h2>
+            <p className="text-[#888] text-sm">{student.email}</p>
+            <span className={`inline-block mt-2 px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${TIER_BADGE[student.tier]}`}>{student.tier}</span>
+          </div>
+          <div className="text-right">
+            <p className="text-[#FF6B00] font-bold text-2xl">{student._count.progress}</p>
+            <p className="text-[#555] text-xs">lessons completed</p>
+          </div>
+        </div>
+        <p className="text-[#555] text-xs">Joined {new Date(student.createdAt).toLocaleDateString()}</p>
+      </div>
+
+      {stats ? (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-4 text-center">
+              <p className="text-[#FF6B00] font-black text-2xl">R{stats.revenue.toLocaleString()}</p>
+              <p className="text-[#555] text-xs mt-1">Total Revenue</p>
+            </div>
+            <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-4 text-center">
+              <p className="text-white font-black text-2xl">{stats.payments}</p>
+              <p className="text-[#555] text-xs mt-1">Payments Logged</p>
+            </div>
+          </div>
+          {stats.wins.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-widest text-[#444] font-semibold">Payment History</p>
+              {stats.wins.map(w => (
+                <div key={w.id} className="bg-[#0a0a0a] border border-white/8 rounded-xl p-4 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-white font-semibold text-sm">R{w.paymentsValue.toLocaleString()}</p>
+                    {w.notes && <p className="text-[#888] text-xs mt-0.5">{w.notes}</p>}
+                  </div>
+                  <p className="text-[#555] text-xs flex-shrink-0">{new Date(w.createdAt).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short' })}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-[#555] text-sm text-center py-6">No payments logged yet.</p>
+          )}
+        </>
+      ) : (
+        <p className="text-[#555] text-sm text-center py-6">Loading...</p>
+      )}
+    </div>
+  )
+}
+
 export default function AdminView({ modules: init, codes: initCodes, totalStudents, totalCompletions, students, announcements: initAnnouncements, trackerEntries: initTrackerEntries, calls: initCalls, callRequests: initCallRequests, adminName }: Props) {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>("modules")
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [modules, setModules] = useState(init)
   const [codes, setCodes] = useState(initCodes)
   const [announcements, setAnnouncements] = useState(initAnnouncements)
@@ -549,7 +611,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
       )}
 
       {/* Students tab */}
-      {tab === "students" && (
+      {tab === "students" && !selectedStudent && (
         <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
@@ -563,7 +625,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
             </thead>
             <tbody className="divide-y divide-white/5">
               {students.map((s) => (
-                <tr key={s.id} className="hover:bg-white/3 transition-colors duration-150">
+                <tr key={s.id} className="hover:bg-white/3 transition-colors duration-150 cursor-pointer" onClick={() => setSelectedStudent(s)}>
                   <td className="px-4 py-3 text-white font-semibold">{s.name}</td>
                   <td className="px-4 py-3 text-[#888] text-xs">{s.email}</td>
                   <td className="px-4 py-3">
@@ -579,6 +641,10 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
             </tbody>
           </table>
         </div>
+      )}
+
+      {tab === "students" && selectedStudent && (
+        <StudentDetail student={selectedStudent} onBack={() => setSelectedStudent(null)} />
       )}
 
       {/* Tracker tab */}

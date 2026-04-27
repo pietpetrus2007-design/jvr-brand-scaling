@@ -194,7 +194,7 @@ export default function TrackerView({ initialEntries, leaderboard, communityReve
           disabled={saving || !paymentsValue || Number(paymentsValue) <= 0}
           className="w-full bg-[#FF6B00] hover:bg-[#e05e00] disabled:opacity-40 text-white font-bold py-3.5 rounded-xl text-sm transition-all duration-150 hover:shadow-[0_0_20px_rgba(255,107,0,0.4)]"
         >
-          {saving ? "Logging..." : "🔥 Log My Win"}
+          {saving ? "Logging..." : "Log a Payment"}
         </button>
       </form>
 

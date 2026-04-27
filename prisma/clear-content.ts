@@ -2,15 +2,14 @@ import "dotenv/config"
 import { PrismaClient } from "@prisma/client"
 import { PrismaNeon } from "@prisma/adapter-neon"
 
-const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! } as any)
+const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! })
 const prisma = new PrismaClient({ adapter } as any)
 
 async function main() {
-  // Delete all progress, lessons and modules
-  await (prisma.progress as any).deleteMany({})
-  await (prisma.lesson as any).deleteMany({})
-  await (prisma.module as any).deleteMany({})
-  console.log("✅ All placeholder course content removed")
+  const announcements = await prisma.announcement.deleteMany({})
+  const messages = await prisma.message.deleteMany({})
+  console.log(`Deleted ${announcements.count} announcements`)
+  console.log(`Deleted ${messages.count} messages`)
 }
 
 main().catch(console.error).finally(() => prisma.$disconnect())

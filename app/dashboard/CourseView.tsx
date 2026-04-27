@@ -174,7 +174,7 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
                     )}
                     <div className="mt-3">
                       <div className="flex justify-between text-xs mb-1">
-                        <span className="text-[#666]">{done}/{total} lessons</span>
+                        <span className="text-[#666]">{done}/{total} lessons · ~{Math.ceil(total * 7)} min</span>
                         <span className="text-[#FF6B00] font-medium">{pct}%</span>
                       </div>
                       <div className="h-1 bg-white/8 rounded-full overflow-hidden">

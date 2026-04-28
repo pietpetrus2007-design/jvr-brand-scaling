@@ -161,6 +161,8 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
             modules.map((mod) => {
               const done = mod.lessons.filter((l) => completedIds.has(l.id)).length
               const total = mod.lessons.length
+              const totalSlides = mod.lessons.reduce((sum, l) => sum + (l.slidePages || 0), 0)
+              const estMins = Math.ceil(totalSlides * 0.75)
               const pct = total > 0 ? Math.round((done / total) * 100) : 0
               return (
                 <div
@@ -174,7 +176,7 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
                     )}
                     <div className="mt-3">
                       <div className="flex justify-between text-xs mb-1">
-                        <span className="text-[#666]">{done}/{total} lessons · ~{Math.ceil(total * 7)} min</span>
+                        <span className="text-[#666]">{done}/{total} lessons · ~{estMins} min</span>
                         <span className="text-[#FF6B00] font-medium">{pct}%</span>
                       </div>
                       <div className="h-1 bg-white/8 rounded-full overflow-hidden">

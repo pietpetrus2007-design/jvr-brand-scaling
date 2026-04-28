@@ -132,7 +132,7 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
               </button>
             ))}
           </div>
-          <span className="text-[#555] text-xs whitespace-nowrap pb-3 pr-1">
+          <span className="text-[#FF6B00] text-xs font-semibold whitespace-nowrap pb-3 pr-1">
             ⏱ ~{remHrs}h {remMins}m remaining
           </span>
         </div>

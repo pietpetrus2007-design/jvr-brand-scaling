@@ -133,7 +133,7 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
             ))}
           </div>
           <span className="text-[#FF6B00] text-xs font-semibold whitespace-nowrap pb-3 pr-1">
-            ⏱ ~{remHrs}h {remMins}m remaining
+            Est. {remHrs}h {remMins}m left in this part
           </span>
         </div>
       </div>

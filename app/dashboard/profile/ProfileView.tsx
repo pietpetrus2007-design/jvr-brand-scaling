@@ -142,8 +142,8 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> AI chat assistant</li>
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Weekly group calls</li>
               <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> 1-on-1 with JvR</li>
-              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Lifetime course access</li>
-              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> 3 months community features</li>
+              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> 3 Month Community Access</li>
+              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Lifetime Course Access</li>
 
             </ul>
             {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['community'] && (
@@ -172,9 +172,10 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Everything in Community</li>
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> 1-on-1 chat with JvR</li>
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Private 1-on-1 calls with JvR</li>
-              <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Lifetime course access</li>
-              <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> 1 month intensive mentorship</li>
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Personal strategy sessions</li>
+              <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> 1 Month Mentorship Access</li>
+              <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> 3 Month Community Access</li>
+              <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Lifetime Course Access</li>
 
             </ul>
             {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['mentorship'] && (

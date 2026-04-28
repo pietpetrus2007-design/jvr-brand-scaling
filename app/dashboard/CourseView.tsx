@@ -114,7 +114,7 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
     <div className="w-full px-6 py-8 flex flex-col gap-6">
       {/* Part Switcher */}
       <div className="overflow-x-auto">
-        <div className="flex items-center justify-between border-b border-white/10 min-w-max w-full">
+        <div className="flex items-center justify-between border-b border-white/10">
           <div className="flex gap-0">
             {PARTS.map((p) => (
               <button

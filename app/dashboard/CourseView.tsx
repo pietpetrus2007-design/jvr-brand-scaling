@@ -106,9 +106,11 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
   const totalDone = modules.reduce((acc, m) => acc + m.lessons.filter((l) => completedIds.has(l.id)).length, 0)
   const overallPct = totalLessons > 0 ? Math.round((totalDone / totalLessons) * 100) : 0
   const totalSlides = modules.reduce((acc, m) => acc + m.lessons.reduce((s, l) => s + (l.slidePages || 0), 0), 0)
-  const totalMins = Math.ceil(totalSlides * 0.75)
-  const totalHrs = Math.floor(totalMins / 60)
-  const remMins = totalMins % 60
+  const completedSlides = modules.reduce((acc, m) => acc + m.lessons.filter(l => completedIds.has(l.id)).reduce((s, l) => s + (l.slidePages || 0), 0), 0)
+  const remainingSlides = totalSlides - completedSlides
+  const remTotalMins = Math.ceil(remainingSlides * 0.75)
+  const remHrs = Math.floor(remTotalMins / 60)
+  const remMins = remTotalMins % 60
 
   return (
     <div className="w-full px-6 py-8 flex flex-col gap-6">
@@ -131,7 +133,7 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
             ))}
           </div>
           <span className="text-[#555] text-xs whitespace-nowrap pb-3 pr-1">
-            ⏱ {totalHrs}h {remMins}m total
+            ⏱ ~{remHrs}h {remMins}m remaining
           </span>
         </div>
       </div>

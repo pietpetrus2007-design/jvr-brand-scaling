@@ -105,25 +105,34 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
   const totalLessons = modules.reduce((acc, m) => acc + m.lessons.length, 0)
   const totalDone = modules.reduce((acc, m) => acc + m.lessons.filter((l) => completedIds.has(l.id)).length, 0)
   const overallPct = totalLessons > 0 ? Math.round((totalDone / totalLessons) * 100) : 0
+  const totalSlides = modules.reduce((acc, m) => acc + m.lessons.reduce((s, l) => s + (l.slidePages || 0), 0), 0)
+  const totalMins = Math.ceil(totalSlides * 0.75)
+  const totalHrs = Math.floor(totalMins / 60)
+  const remMins = totalMins % 60
 
   return (
     <div className="w-full px-6 py-8 flex flex-col gap-6">
       {/* Part Switcher */}
       <div className="overflow-x-auto">
-        <div className="flex gap-0 border-b border-white/10 min-w-max">
-          {PARTS.map((p) => (
-            <button
-              key={p.value}
-              onClick={() => setActivePart(p.value)}
-              className={`px-5 py-3 text-sm font-semibold whitespace-nowrap transition-all duration-150 border-b-2 -mb-px ${
-                activePart === p.value
-                  ? "text-[#FF6B00] border-[#FF6B00]"
-                  : "text-[#888] border-transparent hover:text-white"
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
+        <div className="flex items-center justify-between border-b border-white/10 min-w-max w-full">
+          <div className="flex gap-0">
+            {PARTS.map((p) => (
+              <button
+                key={p.value}
+                onClick={() => setActivePart(p.value)}
+                className={`px-5 py-3 text-sm font-semibold whitespace-nowrap transition-all duration-150 border-b-2 -mb-px ${
+                  activePart === p.value
+                    ? "text-[#FF6B00] border-[#FF6B00]"
+                    : "text-[#888] border-transparent hover:text-white"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          <span className="text-[#555] text-xs whitespace-nowrap pb-3 pr-1">
+            ⏱ {totalHrs}h {remMins}m total
+          </span>
         </div>
       </div>
 

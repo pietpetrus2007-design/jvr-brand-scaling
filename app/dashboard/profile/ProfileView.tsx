@@ -114,7 +114,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
             <ul className="space-y-1.5 text-xs text-[#888]">
               <li className="flex items-center gap-1.5"><span className="text-white">✓</span> Full course access</li>
               <li className="flex items-center gap-1.5"><span className="text-white">✓</span> Wins &amp; Results chat</li>
-              <li className="flex items-center gap-1.5"><span className="text-white">✓</span> Lifetime access</li>
+
               <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> Community chat rooms</li>
               <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> Announcements from JvR</li>
               <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> AI chat assistant</li>
@@ -142,8 +142,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> AI chat assistant</li>
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Weekly group calls</li>
               <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> 1-on-1 with JvR</li>
-              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> 3 Month Community Access</li>
-              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Lifetime Course Access</li>
+
 
             </ul>
             {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['community'] && (
@@ -173,9 +172,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> 1-on-1 chat with JvR</li>
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Private 1-on-1 calls with JvR</li>
               <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Personal strategy sessions</li>
-              <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> 1 Month Mentorship Access</li>
-              <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> 3 Month Community Access</li>
-              <li className="flex items-center gap-1.5"><span className="text-[#FF6B00]">✓</span> Lifetime Course Access</li>
+
 
             </ul>
             {TIER_ORDER[currentTier as keyof typeof TIER_ORDER] < TIER_ORDER['mentorship'] && (

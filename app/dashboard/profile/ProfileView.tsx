@@ -188,25 +188,66 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
         </div>
 
         {/* Access Info Block */}
-        <div className="mt-4 border border-white/8 rounded-xl bg-white/3 p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <p className="text-[10px] font-bold tracking-widest uppercase text-[#555] mb-1.5">📚 Course Access</p>
-            <p className="text-xs text-[#888] leading-relaxed"><span className="text-white font-semibold">All tiers include lifetime access</span> to the full course content — forever. No expiry, no re-purchase required.</p>
+        <div className="mt-4 space-y-3">
+          <p className="text-[10px] font-bold tracking-widest uppercase text-[#555]">How Access Works — Plan by Plan</p>
+
+          {/* Basic */}
+          <div className="border border-white/8 rounded-xl bg-white/3 p-4">
+            <p className="text-white font-bold text-xs mb-2">Basic</p>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-[#FF6B00]">✓</span>
+                <span className="text-[#888]"><span className="text-white font-semibold">Lifetime access</span> to the full course — forever</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-[#555]">✗</span>
+                <span className="text-[#555]">No community features</span>
+              </div>
+            </div>
           </div>
-          <div>
-            <p className="text-[10px] font-bold tracking-widest uppercase text-[#555] mb-1.5">⏱ Community Features</p>
-            <div className="space-y-1">
-              <div className="flex items-baseline gap-2 text-xs">
-                <span className="text-[#FF6B00] font-semibold min-w-[80px]">Basic</span>
-                <span className="text-[#888]">Lifetime access</span>
+
+          {/* Community */}
+          <div className="border border-blue-500/20 rounded-xl bg-blue-500/5 p-4">
+            <p className="text-blue-400 font-bold text-xs mb-2">Community</p>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-blue-400">✓</span>
+                <span className="text-[#888]"><span className="text-white font-semibold">Lifetime access</span> to the full course — forever</span>
               </div>
-              <div className="flex items-baseline gap-2 text-xs">
-                <span className="text-[#FF6B00] font-semibold min-w-[80px]">Community</span>
-                <span className="text-[#888]">3 months — chat, AI, calls & announcements</span>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-blue-400">✓</span>
+                <span className="text-[#888]"><span className="text-white font-semibold">3 months</span> of community features — chat rooms, AI assistant, weekly calls & announcements</span>
               </div>
-              <div className="flex items-baseline gap-2 text-xs">
-                <span className="text-[#FF6B00] font-semibold min-w-[80px]">Mentorship</span>
-                <span className="text-[#888]">1 month mentorship + 3 months community</span>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-[#555]">→</span>
+                <span className="text-[#555]">After 3 months: community features expire, course access remains</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mentorship */}
+          <div className="border border-[#FF6B00]/20 rounded-xl bg-[#FF6B00]/5 p-4">
+            <p className="text-[#FF6B00] font-bold text-xs mb-2">Mentorship</p>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-[#FF6B00]">✓</span>
+                <span className="text-[#888]"><span className="text-white font-semibold">Lifetime access</span> to the full course — forever</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-[#FF6B00]">✓</span>
+                <span className="text-[#888]"><span className="text-white font-semibold">1 month</span> of full mentorship — 1-on-1 calls, private chat & personal strategy</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-[#FF6B00]">✓</span>
+                <span className="text-[#888]"><span className="text-white font-semibold">3 months</span> of community features — chat rooms, AI assistant, weekly calls & announcements</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-[#555]">→</span>
+                <span className="text-[#555]">After month 1: 1-on-1 access ends, community continues for 2 more months</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-[#555]">→</span>
+                <span className="text-[#555]">After month 3: community features expire, course access remains forever</span>
               </div>
             </div>
           </div>

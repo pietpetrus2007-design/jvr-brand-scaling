@@ -186,6 +186,31 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
             )}
           </div>
         </div>
+
+        {/* Access Info Block */}
+        <div className="mt-4 border border-white/8 rounded-xl bg-white/3 p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <p className="text-[10px] font-bold tracking-widest uppercase text-[#555] mb-1.5">📚 Course Access</p>
+            <p className="text-xs text-[#888] leading-relaxed"><span className="text-white font-semibold">All tiers include lifetime access</span> to the full course content — forever. No expiry, no re-purchase required.</p>
+          </div>
+          <div>
+            <p className="text-[10px] font-bold tracking-widest uppercase text-[#555] mb-1.5">⏱ Community Features</p>
+            <div className="space-y-1">
+              <div className="flex items-baseline gap-2 text-xs">
+                <span className="text-[#FF6B00] font-semibold min-w-[80px]">Basic</span>
+                <span className="text-[#888]">Lifetime access</span>
+              </div>
+              <div className="flex items-baseline gap-2 text-xs">
+                <span className="text-[#FF6B00] font-semibold min-w-[80px]">Community</span>
+                <span className="text-[#888]">3 months — chat, AI, calls & announcements</span>
+              </div>
+              <div className="flex items-baseline gap-2 text-xs">
+                <span className="text-[#FF6B00] font-semibold min-w-[80px]">Mentorship</span>
+                <span className="text-[#888]">1 month mentorship + 3 months community</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>

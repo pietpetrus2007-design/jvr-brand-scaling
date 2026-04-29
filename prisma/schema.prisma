@@ -135,7 +135,7 @@ model GroupCall {
   id           String           @id @default(cuid())
   title        String
   scheduledAt  DateTime
-  roomName     String           @unique
+  joinUrl      String           @default("")
   isActive     Boolean          @default(true)
   startedAt    DateTime?
   inviteAll    Boolean          @default(true)

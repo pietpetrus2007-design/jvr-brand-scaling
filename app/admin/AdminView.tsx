@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import JitsiCall from "@/app/dashboard/JitsiCall"
+
 
 interface Resource { id: string; label: string; url: string; order: number }
 interface Lesson { id: string; title: string; description: string; videoUrl: string; slideUrl: string; slidePages: number; order: number; resources: Resource[] }
@@ -21,7 +21,7 @@ interface GroupCall {
   id: string
   title: string
   scheduledAt: string
-  roomName: string
+  joinUrl: string
   isActive: boolean
   startedAt: string | null
   inviteAll: boolean
@@ -124,7 +124,8 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
   const [trackerEntries] = useState(initTrackerEntries)
   const [calls, setCalls] = useState(initCalls)
   const [callRequests, setCallRequests] = useState<CallReq[]>(initCallRequests)
-  const [newCall, setNewCall] = useState({ title: "", scheduledAt: "" })
+  const [newCall, setNewCall] = useState({ title: "", scheduledAt: "", joinUrl: "" })
+  const [instantJoinUrl, setInstantJoinUrl] = useState("")
   const [schedulingCall, setSchedulingCall] = useState(false)
   const [trackerFilter, setTrackerFilter] = useState("")
   // Instant call state
@@ -137,8 +138,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
   const [schedInviteAll, setSchedInviteAll] = useState(true)
   const [schedSelectedIds, setSchedSelectedIds] = useState<Set<string>>(new Set())
   const [schedStudentSearch, setSchedStudentSearch] = useState("")
-  // Admin Jitsi modal
-  const [adminCall, setAdminCall] = useState<{ roomName: string } | null>(null)
+
   const [newAnnouncement, setNewAnnouncement] = useState({ title: "", content: "", imageUrl: "" })
   const [announcementImageFile, setAnnouncementImageFile] = useState<File | null>(null)
   const [announcementImagePreview, setAnnouncementImagePreview] = useState<string | null>(null)
@@ -279,13 +279,14 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
       body: JSON.stringify({
         title: newCall.title,
         scheduledAt: newCall.scheduledAt,
+        joinUrl: newCall.joinUrl || "",
         inviteAll: schedInviteAll,
         invitedUserIds: schedInviteAll ? [] : Array.from(schedSelectedIds),
       }),
     })
     const created = await res.json()
     setCalls((prev) => [...prev, created])
-    setNewCall({ title: "", scheduledAt: "" })
+    setNewCall({ title: "", scheduledAt: "", joinUrl: "" })
     setSchedInviteAll(true)
     setSchedSelectedIds(new Set())
     setSchedulingCall(false)
@@ -299,6 +300,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
       body: JSON.stringify({
         title: instantTitle.trim() || "Live Group Call",
         startNow: true,
+        joinUrl: instantJoinUrl || "",
         inviteAll: instantInviteAll,
         invitedUserIds: instantInviteAll ? [] : Array.from(instantSelectedIds),
       }),
@@ -309,7 +311,6 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
     setInstantInviteAll(true)
     setInstantSelectedIds(new Set())
     setStartingInstant(false)
-    setAdminCall({ roomName: created.roomName })
   }
 
   async function startScheduledCall(id: string) {
@@ -320,7 +321,6 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
     })
     const updated = await res.json()
     setCalls((prev) => prev.map((c) => c.id === id ? { ...c, startedAt: updated.startedAt } : c))
-    setAdminCall({ roomName: updated.roomName })
   }
 
   async function cancelCall(id: string) {
@@ -403,14 +403,6 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
 
   return (
     <>
-      {adminCall && (
-        <JitsiCall
-          roomName={adminCall.roomName}
-          userName={adminName}
-          isAdmin={true}
-          onClose={() => setAdminCall(null)}
-        />
-      )}
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
       {/* Header + stats */}
       <div className="flex items-start justify-between flex-wrap gap-4">
@@ -775,6 +767,12 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
               placeholder='Title (optional, default "Live Group Call")'
               className={`w-full ${inputCls}`}
             />
+            <input
+              value={instantJoinUrl}
+              onChange={(e) => setInstantJoinUrl(e.target.value)}
+              placeholder="Zoom / Google Meet link (paste here)"
+              className={`w-full ${inputCls}`}
+            />
             <div className="flex gap-3">
               <button
                 onClick={() => setInstantInviteAll(true)}
@@ -798,7 +796,10 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
               />
             )}
             <button
-              onClick={startInstantCall}
+              onClick={async () => {
+                await startInstantCall()
+                if (instantJoinUrl) window.open(instantJoinUrl, '_blank')
+              }}
               disabled={startingInstant || (!instantInviteAll && instantSelectedIds.size === 0)}
               className="bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-bold px-6 py-3 rounded-xl text-sm transition-colors duration-150"
             >
@@ -823,6 +824,12 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
                 className={inputCls}
               />
             </div>
+            <input
+              value={newCall.joinUrl}
+              onChange={(e) => setNewCall((p) => ({ ...p, joinUrl: e.target.value }))}
+              placeholder="Zoom / Google Meet link (paste here)"
+              className={`w-full ${inputCls}`}
+            />
             <div className="flex gap-3">
               <button
                 onClick={() => setSchedInviteAll(true)}
@@ -864,7 +871,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
                     <th className="text-left px-4 py-3">Title</th>
                     <th className="text-left px-4 py-3">Scheduled</th>
                     <th className="text-left px-4 py-3">Status</th>
-                    <th className="text-left px-4 py-3">Room</th>
+                    <th className="text-left px-4 py-3">Zoom Link</th>
                     <th className="text-left px-4 py-3"></th>
                   </tr>
                 </thead>
@@ -883,7 +890,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
                           <span className="text-[#555] text-xs">Scheduled</span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-[#555] text-xs font-mono">{c.roomName}</td>
+                      <td className="px-4 py-3 text-[#555] text-xs font-mono truncate max-w-[160px]">{c.joinUrl || '—'}</td>
                       <td className="px-4 py-3 flex items-center gap-3">
                         {!c.startedAt && (
                           <button
@@ -895,7 +902,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
                         )}
                         {c.startedAt && (
                           <button
-                            onClick={() => setAdminCall({ roomName: c.roomName })}
+                            onClick={() => c.joinUrl && window.open(c.joinUrl, '_blank')}
                             className="text-green-400 hover:text-green-300 text-xs font-semibold transition-colors duration-150"
                           >
                             Join

@@ -30,6 +30,11 @@ export default function JitsiCall({ roomName, userName, isAdmin, onClose }: Prop
           startWithVideoMuted: false,
           disableDeepLinking: true,
           enableWelcomePage: false,
+          lobby: { autoKnock: false, enableChat: false },
+          enableLobbyChat: false,
+          hideLobbyButton: true,
+          requireDisplayName: false,
+          enableInsecureRoomNameWarning: false,
         },
         interfaceConfigOverwrite: {
           SHOW_JITSI_WATERMARK: false,

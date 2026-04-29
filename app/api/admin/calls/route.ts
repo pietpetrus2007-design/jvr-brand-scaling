@@ -27,7 +27,8 @@ export async function POST(req: NextRequest) {
   const call = await prisma.groupCall.create({
     data: {
       title: title || "Live Group Call",
-      scheduledAt: startNow ? now : new Date(scheduledAt),
+      // scheduledAt from datetime-local is local time (SAST = UTC+2) — subtract 2h to store as UTC
+      scheduledAt: startNow ? now : new Date(new Date(scheduledAt).getTime() - (2 * 60 * 60 * 1000)),
       joinUrl,
       startedAt: startNow ? now : null,
       inviteAll,

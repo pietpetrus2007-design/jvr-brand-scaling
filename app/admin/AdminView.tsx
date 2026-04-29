@@ -879,7 +879,7 @@ export default function AdminView({ modules: init, codes: initCodes, totalStuden
                   {calls.map((c) => (
                     <tr key={c.id} className="hover:bg-white/3 transition-colors duration-150">
                       <td className="px-4 py-3 text-white font-semibold">{c.title}</td>
-                      <td className="px-4 py-3 text-[#888] text-xs">{new Date(c.scheduledAt).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-[#888] text-xs">{new Date(c.scheduledAt).toLocaleString('en-ZA', { timeZone: 'Africa/Johannesburg' })}</td>
                       <td className="px-4 py-3">
                         {c.startedAt ? (
                           <span className="flex items-center gap-1.5 text-red-400 text-xs font-semibold">

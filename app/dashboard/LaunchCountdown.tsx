@@ -5,7 +5,7 @@ export default function LaunchCountdown({ isAdmin }: { isAdmin: boolean }) {
   const [timeLeft, setTimeLeft] = useState({ days: 21, hours: 0, minutes: 0, seconds: 0, done: false })
 
   useEffect(() => {
-    const target = new Date(process.env.NEXT_PUBLIC_LAUNCH_DATE || '2026-05-15T00:00:00+02:00')
+    const target = new Date(process.env.NEXT_PUBLIC_LAUNCH_DATE || '2026-05-15T14:00:00+02:00')
 
     const tick = () => {
       const now = new Date()

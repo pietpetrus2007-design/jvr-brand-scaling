@@ -223,7 +223,7 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
                               </svg>
                             )}
                           </span>
-                          <span className="truncate text-xs leading-relaxed">{lesson.title}</span>
+                          <span className="truncate text-sm font-medium leading-snug">{lesson.title}</span>
                         </button>
                       )
                     })}

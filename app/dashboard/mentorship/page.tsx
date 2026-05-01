@@ -35,5 +35,5 @@ export default async function MentorshipPage() {
     orderBy: { createdAt: "desc" }
   })
 
-  return <MentorshipView initialRequests={requests as any} />
+  return <MentorshipView initialRequests={requests as any} userId={session.user.id as string} userName={(user.name || user.email) as string} userTier={tier} userRole={user.role as string} />
 }

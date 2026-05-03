@@ -156,6 +156,15 @@ export default function MentorshipView({ initialRequests, userId, userName, user
       </div>
 
       {/* 1-on-1 Chat */}
+      {isAdmin ? (
+        <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-5 flex items-center gap-3">
+          <span className="text-2xl">👤</span>
+          <div>
+            <p className="text-white font-bold text-sm">1-on-1 Student Chats</p>
+            <p className="text-[#888] text-xs mt-0.5">Manage all private student conversations in the <a href="/dashboard/community" className="text-[#FF6B00] underline">Community page</a> → 1-on-1 with JvR room.</p>
+          </div>
+        </div>
+      ) : (
       <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl overflow-hidden flex flex-col" style={{ height: '420px' }}>
         <div className="px-4 py-3 border-b border-white/8 flex items-center gap-2">
           <span className="text-base">👤</span>
@@ -221,6 +230,7 @@ export default function MentorshipView({ initialRequests, userId, userName, user
           </div>
         </form>
       </div>
+      )}
 
       {/* Request a call */}
       <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-5">

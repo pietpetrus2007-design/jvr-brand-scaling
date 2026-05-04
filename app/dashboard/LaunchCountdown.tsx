@@ -41,7 +41,7 @@ export default function LaunchCountdown({ isAdmin }: { isAdmin: boolean }) {
         You&apos;re In Early.
       </h2>
       <p className="text-[#888] text-base mb-10 max-w-sm">
-        The full program unlocks on <span className="text-white font-semibold">May 11, 2026</span>. Your account is ready — sit tight.
+        The full program unlocks on <span className="text-white font-semibold">May 15, 2026</span>. Your account is ready — sit tight.
       </p>
 
       {/* Countdown */}

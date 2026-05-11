@@ -5,7 +5,7 @@ export default function LaunchCountdown({ isAdmin }: { isAdmin: boolean }) {
   const [timeLeft, setTimeLeft] = useState({ days: 21, hours: 0, minutes: 0, seconds: 0, done: false })
 
   useEffect(() => {
-    const target = new Date('2026-05-15T14:00:00+02:00')
+    const target = new Date('2026-05-16T00:00:00+02:00')
 
     const tick = () => {
       const now = new Date()
@@ -41,7 +41,7 @@ export default function LaunchCountdown({ isAdmin }: { isAdmin: boolean }) {
         You&apos;re In Early.
       </h2>
       <p className="text-[#888] text-base mb-10 max-w-sm">
-        The full program unlocks on <span className="text-white font-semibold">May 15, 2026</span>. Your account is ready — sit tight.
+        The full program unlocks on <span className="text-white font-semibold">May 16, 2026</span>. Your account is ready — sit tight.
       </p>
 
       {/* Countdown */}

@@ -232,77 +232,22 @@ export default function MentorshipView({ initialRequests, userId, userName, user
       </div>
       )}
 
-      {/* Request a call */}
-      <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-5">
-        <h2 className="text-white font-bold text-base mb-1">Request a Private Call</h2>
-        <p className="text-[#888] text-sm mb-5">Tell JvR what you need help with and when works for you.</p>
-
-        {sent && (
-          <div className="mb-4 bg-green-500/10 border border-green-500/30 rounded-xl px-4 py-3 text-green-400 text-sm font-medium">
-            ✓ Request sent — JvR will get back to you shortly.
+      {/* Upcoming Calls */}
+      <div>
+        <h2 className="text-white font-bold text-base mb-3">📞 Your Upcoming Calls</h2>
+        {requests.filter(r => r.status === 'confirmed').length === 0 ? (
+          <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-5 text-center">
+            <p className="text-[#555] text-sm">No upcoming calls scheduled.</p>
+            <p className="text-[#444] text-xs mt-2">DM JvR directly in the <span className="text-[#FF6B00]">1-on-1 chat above</span> to book a call.</p>
           </div>
-        )}
-        {error && (
-          <div className="mb-4 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-red-400 text-sm">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={submit} className="space-y-4">
-          <div>
-            <label className="text-[#888] text-xs font-semibold uppercase tracking-widest mb-1.5 block">Topic</label>
-            <input
-              type="text"
-              value={topic}
-              onChange={e => setTopic(e.target.value)}
-              placeholder="e.g. Struggling with getting replies on outreach"
-              className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-[#444] outline-none focus:border-[#FF6B00]/50 transition-colors"
-              style={{ fontSize: '16px' }}
-            />
-          </div>
-          <div>
-            <label className="text-[#888] text-xs font-semibold uppercase tracking-widest mb-1.5 block">Message</label>
-            <textarea
-              value={message}
-              onChange={e => setMessage(e.target.value)}
-              placeholder="Give JvR some context about where you're at and what you need..."
-              rows={4}
-              className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-[#444] outline-none focus:border-[#FF6B00]/50 transition-colors resize-none"
-              style={{ fontSize: '16px' }}
-            />
-          </div>
-          <div>
-            <label className="text-[#888] text-xs font-semibold uppercase tracking-widest mb-1.5 block">Preferred Time</label>
-            <input
-              type="text"
-              value={preferredTime}
-              onChange={e => setPreferredTime(e.target.value)}
-              placeholder="e.g. Weekday mornings, or Saturday afternoon"
-              className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-[#444] outline-none focus:border-[#FF6B00]/50 transition-colors"
-              style={{ fontSize: '16px' }}
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={sending || !topic.trim() || !message.trim() || !preferredTime.trim()}
-            className="w-full bg-[#FF6B00] hover:bg-[#e05e00] disabled:opacity-40 text-white font-bold py-3 rounded-xl text-sm transition-colors"
-          >
-            {sending ? "Sending..." : "Request Call →"}
-          </button>
-        </form>
-      </div>
-
-      {/* Past requests */}
-      {requests.length > 0 && (
-        <div>
-          <h2 className="text-white font-bold text-sm mb-3">Your Requests</h2>
+        ) : (
           <div className="space-y-3">
-            {requests.map(r => (
-              <div key={r.id} className="bg-[#0a0a0a] border border-white/8 rounded-xl p-4">
+            {requests.filter(r => r.status === 'confirmed').map(r => (
+              <div key={r.id} className="bg-[#0a0a0a] border border-[#FF6B00]/30 rounded-xl p-4">
                 <div className="flex items-start justify-between gap-3 mb-1">
                   <p className="text-white text-sm font-semibold">{r.topic}</p>
-                  <span className={`text-xs px-2 py-0.5 rounded-full border font-semibold capitalize flex-shrink-0 ${STATUS_STYLES[r.status] || STATUS_STYLES.pending}`}>
-                    {r.status}
+                  <span className="text-xs px-2 py-0.5 rounded-full border font-semibold capitalize flex-shrink-0 bg-blue-500/15 text-blue-400 border-blue-500/30">
+                    Confirmed
                   </span>
                 </div>
                 <p className="text-[#888] text-xs mb-1">{r.message}</p>
@@ -310,8 +255,8 @@ export default function MentorshipView({ initialRequests, userId, userName, user
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

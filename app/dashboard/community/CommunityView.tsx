@@ -51,6 +51,20 @@ function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
 }
 
+function formatDateLabel(iso: string) {
+  const d = new Date(iso)
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(today.getDate() - 1)
+  if (d.toDateString() === today.toDateString()) return "Today"
+  if (d.toDateString() === yesterday.toDateString()) return "Yesterday"
+  return d.toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" })
+}
+
+function isSameDay(a: string, b: string) {
+  return new Date(a).toDateString() === new Date(b).toDateString()
+}
+
 interface Props {
   userId: string
   userEmail?: string
@@ -354,8 +368,17 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
                     {threadMessages.length === 0 && (
                       <p className="text-center text-[#555] text-sm pt-8">No messages yet.</p>
                     )}
-                    {threadMessages.map((msg) => (
-                      <MessageItem key={msg.id} msg={msg} currentUserId={userId} />
+                    {threadMessages.map((msg, i) => (
+                      <>
+                        {(i === 0 || !isSameDay(threadMessages[i - 1].createdAt, msg.createdAt)) && (
+                          <div key={`date-${msg.id}`} className="flex items-center gap-3 my-2">
+                            <div className="flex-1 h-px bg-white/8" />
+                            <span className="text-[#444] text-xs font-medium">{formatDateLabel(msg.createdAt)}</span>
+                            <div className="flex-1 h-px bg-white/8" />
+                          </div>
+                        )}
+                        <MessageItem key={msg.id} msg={msg} currentUserId={userId} />
+                      </>
                     ))}
                     <div ref={bottomRef} />
                   </div>
@@ -400,7 +423,18 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
               {messages.length === 0 && (
                 <p className="text-center text-[#555] text-sm pt-8">No messages yet. Be the first!</p>
               )}
-              {messages.map((msg) => <MessageItem key={msg.id} msg={msg} currentUserId={userId} />)}
+              {messages.map((msg, i) => (
+                <>
+                  {(i === 0 || !isSameDay(messages[i - 1].createdAt, msg.createdAt)) && (
+                    <div key={`date-${msg.id}`} className="flex items-center gap-3 my-2">
+                      <div className="flex-1 h-px bg-white/8" />
+                      <span className="text-[#444] text-xs font-medium">{formatDateLabel(msg.createdAt)}</span>
+                      <div className="flex-1 h-px bg-white/8" />
+                    </div>
+                  )}
+                  <MessageItem key={msg.id} msg={msg} currentUserId={userId} />
+                </>
+              ))}
               <div ref={bottomRef} />
             </div>
 

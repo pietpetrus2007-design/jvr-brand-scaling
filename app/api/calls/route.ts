@@ -8,6 +8,11 @@ export async function GET() {
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   const userId = (session.user as any).id
 
+  // Basic tier students don't have access to group calls
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { tier: true, role: true } })
+  if (!user) return NextResponse.json(null)
+  if (user.role !== 'admin' && user.tier === 'basic') return NextResponse.json(null)
+
   const now = new Date()
 
   // Find the soonest active call that is either live or upcoming

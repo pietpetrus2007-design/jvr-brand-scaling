@@ -30,7 +30,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div className="min-h-screen bg-black flex flex-col">
       <DashboardNav user={user} hasUnreadAnnouncements={hasUnread} />
-      <LaunchCountdown isAdmin={user.role === "admin" || ['Nicolaas200809@icloud.com','schuttebraam@gmail.com','velliewear@gmail.com','erichj.small@gmail.com','nehanvanwyk@gmail.com'].includes(user.email ?? '')} />
+      <LaunchCountdown isAdmin={user.role === "admin" || ['Nicolaas200809@icloud.com','schuttebraam@gmail.com','velliewear@gmail.com','erichj.small@gmail.com','nehanvanwyk@gmail.com','hendrewschoeman21@gmail.com'].includes(user.email ?? '')} />
       <CallCountdown userName={user.name ?? user.email ?? "Student"} isAdmin={user.role === "admin"} />
       <main className="flex-1">{children}</main>
       <InstallBanner />

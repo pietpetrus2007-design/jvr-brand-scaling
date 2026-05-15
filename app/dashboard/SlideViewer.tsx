@@ -9,7 +9,7 @@ interface Props {
 const CLOUD = "https://res.cloudinary.com/dwnfccsje/image/upload"
 
 // Build optimised URL — f_auto lets Cloudinary serve jpg/png/webp automatically
-function slideUrl(publicId: string, slide: number, width = 1200) {
+function slideUrl(publicId: string, slide: number, width = 2400) {
   return `${CLOUD}/f_auto,q_auto:best,w_${width}/jvr-brand-scaling/hires/${publicId}/slide-${slide}?v=${Date.now()}`
 }
 

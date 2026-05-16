@@ -76,6 +76,7 @@ interface Props {
 export default function CommunityView({ userId, userName, userEmail, userTier, userRole }: Props) {
   const [activeRoom, setActiveRoom] = useState("wins")
   const [messages, setMessages] = useState<Message[]>([])
+  const [roomLastRead, setRoomLastRead] = useState<Record<string, string>>({})
   const [input, setInput] = useState("")
   const [sending, setSending] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -83,6 +84,7 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
   const [uploading, setUploading] = useState(false)
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
   const [lastReadAt, setLastReadAt] = useState<Record<string, string>>({})
+  const [roomLatestMsg, setRoomLatestMsg] = useState<Record<string, string>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -106,9 +108,34 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
       if (res.ok) {
         const data = await res.json()
         setMessages(data)
+        // Mark this room as read
+        if (data.length > 0) {
+          setRoomLastRead(prev => ({ ...prev, [activeRoom]: data[data.length - 1].createdAt }))
+        }
       }
     } catch {}
   }
+
+  // Background poll for unread indicators in other rooms
+  useEffect(() => {
+    const pollOtherRooms = async () => {
+      for (const room of ROOMS) {
+        if (room.id === activeRoom || !canAccess(room)) continue
+        try {
+          const res = await fetch(`/api/messages?room=${room.id}&limit=1`)
+          if (res.ok) {
+            const data = await res.json()
+            if (data.length > 0) {
+              setRoomLatestMsg(prev => ({ ...prev, [room.id]: data[data.length - 1].createdAt }))
+            }
+          }
+        } catch {}
+      }
+    }
+    pollOtherRooms()
+    const id = setInterval(pollOtherRooms, 10000)
+    return () => clearInterval(id)
+  }, [activeRoom])
 
   useEffect(() => {
     const current = ROOMS.find((r) => r.id === activeRoom)
@@ -247,7 +274,10 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
             return (
               <button
                 key={room.id}
-                onClick={() => setActiveRoom(room.id)}
+                onClick={() => {
+                  setActiveRoom(room.id)
+                  setRoomLastRead(prev => ({ ...prev, [room.id]: new Date().toISOString() }))
+                }}
                 className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-2.5 transition-all duration-150 ${
                   isActive
                     ? "bg-[#FF6B00]/12 text-white border border-[#FF6B00]/30 shadow-[0_0_15px_rgba(255,107,0,0.12)]"
@@ -261,6 +291,9 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
                 )}
                 <span className="text-base">{room.icon}</span>
                 <span className="flex-1 truncate font-medium">{room.label}</span>
+                {!isActive && accessible && roomLatestMsg[room.id] && (!roomLastRead[room.id] || new Date(roomLatestMsg[room.id]) > new Date(roomLastRead[room.id])) && (
+                  <span className="w-2 h-2 rounded-full bg-[#FF6B00] flex-shrink-0" />
+                )}
                 {!accessible && (
                   <svg className="w-3.5 h-3.5 text-[#888]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />

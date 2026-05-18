@@ -76,7 +76,9 @@ interface Props {
 export default function CommunityView({ userId, userName, userEmail, userTier, userRole }: Props) {
   const [activeRoom, setActiveRoom] = useState("wins")
   const [messages, setMessages] = useState<Message[]>([])
-  const [roomLastRead, setRoomLastRead] = useState<Record<string, string>>({})
+  const [roomLastRead, setRoomLastRead] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem('community_last_read') || '{}') } catch { return {} }
+  })
   const [input, setInput] = useState("")
   const [sending, setSending] = useState(false)
   const [imagePreview, setImagePreview] = useState<string | null>(null)

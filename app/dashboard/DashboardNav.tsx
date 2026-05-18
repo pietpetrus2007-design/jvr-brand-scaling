@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
+import { useState, useEffect } from "react"
 
 interface Props {
   user: { name?: string | null; email?: string | null; role?: string; tier?: string }
@@ -23,10 +24,42 @@ const AVATAR_STYLES: Record<string, string> = {
 
 export default function DashboardNav({ user, hasUnreadAnnouncements }: Props) {
   const pathname = usePathname()
+  const [hasUnreadCommunity, setHasUnreadCommunity] = useState(false)
+
+  useEffect(() => {
+    if (pathname === '/dashboard/community') {
+      setHasUnreadCommunity(false)
+      return
+    }
+    const ROOMS = ['wins', 'chatting', 'qa', 'private']
+    const STORAGE_KEY = 'community_last_read'
+    const poll = async () => {
+      try {
+        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
+        for (const room of ROOMS) {
+          const res = await fetch(`/api/messages?room=${room}&limit=1`)
+          if (!res.ok) continue
+          const data = await res.json()
+          if (data.length > 0) {
+            const latestTs = data[0].createdAt
+            const lastRead = stored[room]
+            if (!lastRead || new Date(latestTs) > new Date(lastRead)) {
+              setHasUnreadCommunity(true)
+              return
+            }
+          }
+        }
+        setHasUnreadCommunity(false)
+      } catch {}
+    }
+    poll()
+    const id = setInterval(poll, 15000)
+    return () => clearInterval(id)
+  }, [pathname])
 
   const links: { href: string; label: string; icon: string; unread?: boolean }[] = [
     { href: "/dashboard", label: "Course", icon: "📚" },
-    { href: "/dashboard/community", label: "Community", icon: "💬" },
+    { href: "/dashboard/community", label: "Community", icon: "💬", unread: hasUnreadCommunity },
     { href: "/dashboard/tracker", label: "Tracker", icon: "📊" },
     { href: "/dashboard/ask", label: "Ask AI", icon: "🤖" },
     { href: "/dashboard/announcements", label: "Announcements", icon: "📢", unread: hasUnreadAnnouncements },

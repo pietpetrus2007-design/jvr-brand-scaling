@@ -113,6 +113,12 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
           const latestTs = data[data.length - 1].createdAt
           setRoomLastRead(prev => ({ ...prev, [activeRoom]: latestTs }))
           setRoomLatestMsg(prev => ({ ...prev, [activeRoom]: latestTs }))
+          // Save to localStorage so nav dot clears
+          try {
+            const stored = JSON.parse(localStorage.getItem('community_last_read') || '{}')
+            stored[activeRoom] = latestTs
+            localStorage.setItem('community_last_read', JSON.stringify(stored))
+          } catch {}
         }
       }
     } catch {}

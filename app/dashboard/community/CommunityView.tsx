@@ -108,9 +108,11 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
       if (res.ok) {
         const data = await res.json()
         setMessages(data)
-        // Mark this room as read
+        // Mark this room as read with actual latest message timestamp
         if (data.length > 0) {
-          setRoomLastRead(prev => ({ ...prev, [activeRoom]: data[data.length - 1].createdAt }))
+          const latestTs = data[data.length - 1].createdAt
+          setRoomLastRead(prev => ({ ...prev, [activeRoom]: latestTs }))
+          setRoomLatestMsg(prev => ({ ...prev, [activeRoom]: latestTs }))
         }
       }
     } catch {}
@@ -276,7 +278,6 @@ export default function CommunityView({ userId, userName, userEmail, userTier, u
                 key={room.id}
                 onClick={() => {
                   setActiveRoom(room.id)
-                  setRoomLastRead(prev => ({ ...prev, [room.id]: new Date().toISOString() }))
                 }}
                 className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-2.5 transition-all duration-150 ${
                   isActive

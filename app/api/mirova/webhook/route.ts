@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
+import https from "https"
 
 const KLAVIYO_API_KEY = "pk_Tx6fYg_838a6cd158dfe40ef9b6a7765ecb0e79fd"
 const KLAVIYO_LIST_ID = "VxHbNn" // Mirova Main Email List
@@ -51,23 +52,36 @@ async function grantWAConsent(phone: string, email: string | null, firstName: st
     }
   }
 
-  const res = await fetch("https://a.klaviyo.com/api/profile-subscription-bulk-create-jobs/", {
-    method: "POST",
-    headers: {
-      "Authorization": `Klaviyo-API-Key ${KLAVIYO_API_KEY}`,
-      "revision": "2024-10-15",
-      "Content-Type": "application/json",
-      "accept": "application/json"
-    },
-    body: JSON.stringify(payload)
+  const body = JSON.stringify(payload)
+  
+  return new Promise<number>((resolve, reject) => {
+    const options = {
+      hostname: 'a.klaviyo.com',
+      path: '/api/profile-subscription-bulk-create-jobs/',
+      method: 'POST',
+      headers: {
+        'Authorization': `Klaviyo-API-Key ${KLAVIYO_API_KEY}`,
+        'revision': '2024-10-15',
+        'Content-Type': 'application/json',
+        'accept': 'application/json',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    }
+    const req = https.request(options, (res) => {
+      let data = ''
+      res.on('data', (chunk) => data += chunk)
+      res.on('end', () => {
+        if (res.statusCode && res.statusCode >= 400) {
+          reject(new Error(`Klaviyo error ${res.statusCode}: ${data}`))
+        } else {
+          resolve(res.statusCode || 200)
+        }
+      })
+    })
+    req.on('error', reject)
+    req.write(body)
+    req.end()
   })
-
-  if (!res.ok) {
-    const err = await res.text()
-    throw new Error(`Klaviyo error ${res.status}: ${err}`)
-  }
-
-  return res.status
 }
 
 export async function POST(req: NextRequest) {

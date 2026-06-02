@@ -63,8 +63,9 @@ function WelcomeForm() {
 
     setLoading(false)
 
-    if (signInRes?.error) {
+    if (!signInRes || signInRes?.error) {
       setError("Account activated but sign-in failed. Please go to the login page.")
+      setLoading(false)
       return
     }
 

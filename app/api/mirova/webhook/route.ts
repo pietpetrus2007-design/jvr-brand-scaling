@@ -127,8 +127,8 @@ export async function POST(req: NextRequest) {
     console.log(`Mirova webhook: WA consent granted for ${phone}`)
     return NextResponse.json({ ok: true, phone, email })
 
-  } catch (err) {
+  } catch (err: any) {
     console.error("Mirova webhook error:", err)
-    return NextResponse.json({ error: "Internal error" }, { status: 500 })
+    return NextResponse.json({ error: "Internal error", detail: err?.message || String(err) }, { status: 500 })
   }
 }

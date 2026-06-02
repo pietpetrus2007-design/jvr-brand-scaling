@@ -8,7 +8,7 @@ const KLAVIYO_API_KEY = "pk_Tx6fYg_838a6cd158dfe40ef9b6a7765ecb0e79fd"
 const KLAVIYO_LIST_ID = "VxHbNn" // Mirova Main Email List
 const CONSENT_DATE = new Date().toISOString()
 
-async function grantWAConsent(phone: string, email: string | null, firstName: string, lastName: string) {
+async function grantWAConsent(phone: string, email: string | null) {
   const profileAttrs: Record<string, any> = {
     phone_number: phone,
     subscriptions: {
@@ -26,8 +26,6 @@ async function grantWAConsent(phone: string, email: string | null, firstName: st
   }
 
   if (email) profileAttrs.email = email
-  if (firstName) profileAttrs.first_name = firstName
-  if (lastName) profileAttrs.last_name = lastName
 
   const payload = {
     data: {
@@ -122,7 +120,7 @@ export async function POST(req: NextRequest) {
 
     console.log(`Mirova webhook: granting WA consent for ${phone} (${email})`)
 
-    await grantWAConsent(phone, email, firstName, lastName)
+    await grantWAConsent(phone, email)
 
     console.log(`Mirova webhook: WA consent granted for ${phone}`)
     return NextResponse.json({ ok: true, phone, email })

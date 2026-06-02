@@ -5,7 +5,7 @@ import crypto from "crypto"
 import https from "https"
 
 const KLAVIYO_API_KEY = "pk_Tx6fYg_838a6cd158dfe40ef9b6a7765ecb0e79fd"
-const KLAVIYO_LIST_ID = "VxHbNn" // Mirova Main Email List
+const KLAVIYO_LIST_ID = "Ta44CC" // Mirova WA Subscribers
 const CONSENT_DATE = new Date().toISOString()
 
 async function grantWAConsent(phone: string, email: string | null) {

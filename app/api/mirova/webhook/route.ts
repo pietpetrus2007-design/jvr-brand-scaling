@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, message: "No phone number on order" })
     }
 
-    console.log(`Mirova webhook: granting WA consent for ${phone} (${email})`)
+    console.log(`Mirova webhook [${topic}]: phone=${phone} email=${email}`)
 
     // Grant consent — await it so we know it succeeded before responding
     await grantWAConsent(phone, email)

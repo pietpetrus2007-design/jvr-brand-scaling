@@ -117,13 +117,8 @@ export async function POST(req: NextRequest) {
 
     console.log(`Mirova webhook: granting WA consent for ${phone} (${email})`)
 
-    // Fire and don't await — let it process async while Klaviyo profile syncs
-    grantWAConsent(phone, email).catch(e => console.error('WA consent error:', e?.message))
-
-    // Also schedule a retry after 3 minutes to handle cases where profile doesn't exist yet
-    setTimeout(() => {
-      grantWAConsent(phone, email).catch(e => console.error('WA consent retry error:', e?.message))
-    }, 3 * 60 * 1000)
+    // Grant consent — await it so we know it succeeded before responding
+    await grantWAConsent(phone, email)
 
     return NextResponse.json({ ok: true, phone, email })
 

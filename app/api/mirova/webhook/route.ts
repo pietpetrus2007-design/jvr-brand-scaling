@@ -6,20 +6,16 @@ import https from "https"
 
 const KLAVIYO_API_KEY = "pk_Tx6fYg_838a6cd158dfe40ef9b6a7765ecb0e79fd"
 const KLAVIYO_LIST_ID = "Ta44CC" // Mirova WA Subscribers
-const CONSENT_DATE = new Date().toISOString()
-
 async function grantWAConsent(phone: string, email: string | null) {
   const profileAttrs: Record<string, any> = {
     phone_number: phone,
     subscriptions: {
       whatsapp: {
         marketing: {
-          consent: "SUBSCRIBED",
-          consented_at: CONSENT_DATE
+          consent: "SUBSCRIBED"
         },
         transactional: {
-          consent: "SUBSCRIBED",
-          consented_at: CONSENT_DATE
+          consent: "SUBSCRIBED"
         }
       }
     }
@@ -37,7 +33,7 @@ async function grantWAConsent(phone: string, email: string | null) {
             attributes: profileAttrs
           }]
         },
-        historical_import: false
+        historical_import: true
       },
       relationships: {
         list: {

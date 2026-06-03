@@ -102,14 +102,15 @@ export async function POST(req: NextRequest) {
     }
 
     const order = JSON.parse(body)
+    const topic = req.headers.get('x-shopify-topic') || ''
 
-    // Only process paid orders
-    if (order.financial_status && order.financial_status !== 'paid') {
+    // For orders/paid — only process paid
+    if (topic === 'orders/paid' && order.financial_status && order.financial_status !== 'paid') {
       return NextResponse.json({ ok: true, message: `Skipping — status: ${order.financial_status}` })
     }
 
     const email = order.email || order.customer?.email || null
-    const phone = order.phone || order.customer?.phone || order.billing_address?.phone || null
+    const phone = order.phone || order.customer?.phone || order.billing_address?.phone || order.shipping_address?.phone || null
     const firstName = order.customer?.first_name || order.billing_address?.first_name || ""
     const lastName = order.customer?.last_name || order.billing_address?.last_name || ""
 

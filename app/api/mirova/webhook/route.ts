@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
 import https from "https"
 
-const KLAVIYO_API_KEY = "pk_Tx6fYg_838a6cd158dfe40ef9b6a7765ecb0e79fd"
+const KLAVIYO_API_KEY = "pk_Tx6fYg_6cf30df39f523f0a7474b5028575ec7b6e"
 const KLAVIYO_LIST_ID = "Ta44CC" // Mirova WA Subscribers
 async function grantWAConsent(phone: string, email: string | null) {
   const profileAttrs: Record<string, any> = {

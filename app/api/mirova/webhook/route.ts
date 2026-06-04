@@ -62,8 +62,8 @@ async function grantWAConsent(phone: string, email: string | null) {
     phone_number: phone,
     subscriptions: {
       whatsapp: {
-        marketing: { consent: 'SUBSCRIBED', consented_at: new Date(Date.now() - 60000).toISOString() },
-        transactional: { consent: 'SUBSCRIBED', consented_at: new Date(Date.now() - 60000).toISOString() }
+        marketing: { consent: 'SUBSCRIBED' },
+        transactional: { consent: 'SUBSCRIBED' }
       }
     }
   }
@@ -74,7 +74,7 @@ async function grantWAConsent(phone: string, email: string | null) {
       type: 'profile-subscription-bulk-create-job',
       attributes: {
         profiles: { data: [{ type: 'profile', attributes: profileAttrs }] },
-        historical_import: true
+        historical_import: false
       },
       relationships: { list: { data: { type: 'list', id: KLAVIYO_LIST_ID } } }
     }

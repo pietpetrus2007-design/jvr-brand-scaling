@@ -115,12 +115,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, message: "No phone number on order" })
     }
 
-    console.log(`Mirova webhook [${topic}]: phone=${phone} email=${email}`)
+    // Normalise SA numbers to E.164 format (+27...)
+    let normalisedPhone = phone.replace(/\s+/g, '').replace(/-/g, '')
+    if (normalisedPhone.startsWith('0') && normalisedPhone.length === 10) {
+      normalisedPhone = '+27' + normalisedPhone.slice(1)
+    } else if (normalisedPhone.startsWith('27') && !normalisedPhone.startsWith('+')) {
+      normalisedPhone = '+' + normalisedPhone
+    }
+
+    console.log(`Mirova webhook [${topic}]: phone=${normalisedPhone} email=${email}`)
 
     // Grant consent — await it so we know it succeeded before responding
-    await grantWAConsent(phone, email)
+    await grantWAConsent(normalisedPhone, email)
 
-    return NextResponse.json({ ok: true, phone, email })
+    return NextResponse.json({ ok: true, phone: normalisedPhone, email })
 
   } catch (err: any) {
     console.error("Mirova webhook error:", err)

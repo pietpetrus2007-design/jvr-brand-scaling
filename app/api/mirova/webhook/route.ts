@@ -112,10 +112,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, message: `Skipping — status: ${order.financial_status}` })
     }
 
+    // Extract email and phone from any webhook type
     const email = order.email || order.customer?.email || null
-    const phone = order.phone || order.customer?.phone || order.billing_address?.phone || order.shipping_address?.phone || null
-    const firstName = order.customer?.first_name || order.billing_address?.first_name || ""
-    const lastName = order.customer?.last_name || order.billing_address?.last_name || ""
+    const phone = order.phone || order.customer?.phone || 
+                  order.billing_address?.phone || order.shipping_address?.phone ||
+                  order.default_address?.phone || null
+    const firstName = order.first_name || order.customer?.first_name || order.billing_address?.first_name || ""
+    const lastName = order.last_name || order.customer?.last_name || order.billing_address?.last_name || ""
 
     if (!phone) {
       console.log("Mirova webhook: no phone number on order", order.id)

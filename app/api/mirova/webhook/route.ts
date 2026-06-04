@@ -62,8 +62,8 @@ async function grantWAConsent(phone: string, email: string | null) {
     phone_number: phone,
     subscriptions: {
       whatsapp: {
-        marketing: { consent: 'SUBSCRIBED' },
-        transactional: { consent: 'SUBSCRIBED' }
+        marketing: { consent: 'SUBSCRIBED', consented_at: new Date(Date.now() - 60000).toISOString() },
+        transactional: { consent: 'SUBSCRIBED', consented_at: new Date(Date.now() - 60000).toISOString() }
       }
     }
   }

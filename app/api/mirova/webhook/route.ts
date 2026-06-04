@@ -6,53 +6,12 @@ import https from "https"
 
 const KLAVIYO_API_KEY = "pk_Tx6fYg_6cf30df39f523f0a7474b5028575ec7b6e"
 const KLAVIYO_LIST_ID = "Ta44CC" // Mirova WA Subscribers
-async function grantWAConsent(phone: string, email: string | null) {
-  const profileAttrs: Record<string, any> = {
-    phone_number: phone,
-    subscriptions: {
-      whatsapp: {
-        marketing: {
-          consent: "SUBSCRIBED"
-        },
-        transactional: {
-          consent: "SUBSCRIBED"
-        }
-      }
-    }
-  }
-
-  if (email) profileAttrs.email = email
-
-  const payload = {
-    data: {
-      type: "profile-subscription-bulk-create-job",
-      attributes: {
-        profiles: {
-          data: [{
-            type: "profile",
-            attributes: profileAttrs
-          }]
-        },
-        historical_import: true
-      },
-      relationships: {
-        list: {
-          data: {
-            type: "list",
-            id: KLAVIYO_LIST_ID
-          }
-        }
-      }
-    }
-  }
-
-  const body = JSON.stringify(payload)
-  
-  return new Promise<number>((resolve, reject) => {
+function klaviyoReq(path: string, method: string, body: string): Promise<{status: number, data: string}> {
+  return new Promise((resolve, reject) => {
     const options = {
       hostname: 'a.klaviyo.com',
-      path: '/api/profile-subscription-bulk-create-jobs/',
-      method: 'POST',
+      path,
+      method,
       headers: {
         'Authorization': `Klaviyo-API-Key ${KLAVIYO_API_KEY}`,
         'revision': '2024-10-15',
@@ -63,19 +22,67 @@ async function grantWAConsent(phone: string, email: string | null) {
     }
     const req = https.request(options, (res) => {
       let data = ''
-      res.on('data', (chunk) => data += chunk)
-      res.on('end', () => {
-        if (res.statusCode && res.statusCode >= 400) {
-          reject(new Error(`Klaviyo error ${res.statusCode}: ${data}`))
-        } else {
-          resolve(res.statusCode || 200)
-        }
-      })
+      res.on('data', chunk => data += chunk)
+      res.on('end', () => resolve({ status: res.statusCode || 0, data }))
     })
     req.on('error', reject)
     req.write(body)
     req.end()
   })
+}
+
+async function grantWAConsent(phone: string, email: string | null) {
+  // Step 1: If we have email, find existing profile and patch phone + consent onto it
+  if (email) {
+    const searchRes = await klaviyoReq(
+      `/api/profiles/?filter=equals(email,"${encodeURIComponent(email)}")&fields[profile]=id,phone_number`,
+      'GET', ''
+    )
+    if (searchRes.status === 200) {
+      const searchData = JSON.parse(searchRes.data)
+      const profiles = searchData.data || []
+      if (profiles.length > 0) {
+        const profileId = profiles[0].id
+        // Patch phone number onto existing profile
+        const patchBody = JSON.stringify({
+          data: {
+            type: 'profile',
+            id: profileId,
+            attributes: { phone_number: phone }
+          }
+        })
+        await klaviyoReq(`/api/profiles/${profileId}/`, 'PATCH', patchBody)
+        console.log(`Patched phone ${phone} onto existing profile ${profileId} (${email})`)
+      }
+    }
+  }
+
+  // Step 2: Bulk subscribe with both email + phone (creates or updates profile with WA consent)
+  const profileAttrs: Record<string, any> = {
+    phone_number: phone,
+    subscriptions: {
+      whatsapp: {
+        marketing: { consent: 'SUBSCRIBED' },
+        transactional: { consent: 'SUBSCRIBED' }
+      }
+    }
+  }
+  if (email) profileAttrs.email = email
+
+  const payload = JSON.stringify({
+    data: {
+      type: 'profile-subscription-bulk-create-job',
+      attributes: {
+        profiles: { data: [{ type: 'profile', attributes: profileAttrs }] },
+        historical_import: true
+      },
+      relationships: { list: { data: { type: 'list', id: KLAVIYO_LIST_ID } } }
+    }
+  })
+
+  const result = await klaviyoReq('/api/profile-subscription-bulk-create-jobs/', 'POST', payload)
+  if (result.status >= 400) throw new Error(`Klaviyo ${result.status}: ${result.data}`)
+  return result.status
 }
 
 export async function POST(req: NextRequest) {

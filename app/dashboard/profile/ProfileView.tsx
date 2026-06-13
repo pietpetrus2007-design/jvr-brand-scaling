@@ -118,7 +118,6 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> Community chat rooms</li>
               <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> Announcements from JvR</li>
               <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> AI chat assistant</li>
-              <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> Weekly group calls</li>
               <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> 1-on-1 with JvR</li>
             </ul>
           </div>
@@ -140,7 +139,6 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> All community chat rooms</li>
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Announcements from JvR</li>
               <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> AI chat assistant</li>
-              <li className="flex items-center gap-1.5"><span className="text-blue-400">✓</span> Weekly group calls</li>
               <li className="flex items-center gap-1.5"><span className="text-[#555]">✗</span> 1-on-1 with JvR</li>
 
 
@@ -213,7 +211,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               </div>
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-blue-400">✓</span>
-                <span className="text-[#888]"><span className="text-white font-semibold">3 months</span> of community features — chat rooms, AI assistant, weekly calls & announcements</span>
+                <span className="text-[#888]"><span className="text-white font-semibold">3 months</span> of community features — chat rooms, AI assistant & announcements</span>
               </div>
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-[#555]">→</span>
@@ -236,7 +234,7 @@ export default function ProfileView({ userId, name, email, tier, completedLesson
               </div>
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-[#FF6B00]">✓</span>
-                <span className="text-[#888]"><span className="text-white font-semibold">3 months</span> of community features — chat rooms, AI assistant, weekly calls & announcements</span>
+                <span className="text-[#888]"><span className="text-white font-semibold">3 months</span> of community features — chat rooms, AI assistant & announcements</span>
               </div>
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-[#555]">→</span>

@@ -122,10 +122,10 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
               <button
                 key={p.value}
                 onClick={() => setActivePart(p.value)}
-                className={`px-5 py-3 text-sm font-semibold whitespace-nowrap transition-all duration-150 border-b-2 -mb-px ${
+                className={`px-5 py-3 text-sm font-semibold whitespace-nowrap transition-all duration-200 rounded-t-lg -mb-px ${
                   activePart === p.value
-                    ? "text-[#FF6B00] border-[#FF6B00]"
-                    : "text-[#888] border-transparent hover:text-white"
+                    ? "text-[#FF6B00] border-b-2 border-[#FF6B00] bg-[#FF6B00]/8"
+                    : "text-[#888] border-b-2 border-transparent hover:text-white hover:bg-white/4"
                 }`}
               >
                 {p.label}
@@ -149,9 +149,9 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
                   <span>{totalDone}/{totalLessons} completed</span>
                   <span className="text-[#FF6B00] font-semibold">{overallPct}%</span>
                 </div>
-                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-2 bg-white/10 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#FF6B00] rounded-full transition-all duration-500"
+                    className="h-full bg-gradient-to-r from-[#FF6B00] to-[#ff8c38] rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(255,107,0,0.6)]"
                     style={{ width: `${overallPct}%` }}
                   />
                 </div>
@@ -178,10 +178,10 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
               return (
                 <div
                   key={mod.id}
-                  className="bg-[#0a0a0a] border border-white/8 rounded-xl overflow-hidden border-l-2 border-l-[#FF6B00]/40"
+                  className="bg-gradient-to-br from-[#111] to-[#0a0a0a] border border-white/8 rounded-xl overflow-hidden border-l-4 border-l-[#FF6B00]/60 shadow-[0_2px_20px_rgba(0,0,0,0.4)]"
                 >
                   <div className="p-4">
-                    <h3 className="text-white font-semibold text-sm leading-snug">{mod.title}</h3>
+                    <h3 className="text-white font-bold text-base leading-snug">{mod.title}</h3>
                     {mod.description && (
                       <p className="text-[#666] text-xs mt-1 leading-relaxed">{mod.description}</p>
                     )}
@@ -190,16 +190,16 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
                         <span className="text-[#666]">{done}/{total} lessons · ~{estMins} min</span>
                         <span className="text-[#FF6B00] font-medium">{pct}%</span>
                       </div>
-                      <div className="h-1 bg-white/8 rounded-full overflow-hidden">
+                      <div className="h-1.5 bg-white/8 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-[#FF6B00] rounded-full transition-all duration-300"
+                          className="h-full bg-gradient-to-r from-[#FF6B00] to-[#ff8c38] rounded-full transition-all duration-300"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
                     </div>
                   </div>
                   <div className="border-t border-white/5">
-                    {mod.lessons.map((lesson) => {
+                    {mod.lessons.map((lesson, lessonIdx) => {
                       const isSelected = selectedLesson?.id === lesson.id
                       const isDone = completedIds.has(lesson.id)
                       return (
@@ -208,22 +208,29 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
                           onClick={() => handleLessonClick(lesson, mod)}
                           className={`w-full text-left px-4 py-3 flex items-center gap-3 text-sm transition-all duration-150 border-b border-white/5 last:border-0 ${
                             isSelected
-                              ? "bg-[#FF6B00]/12 text-white"
+                              ? "bg-[#FF6B00]/15 text-white"
+                              : isDone
+                              ? "text-[#aaa] hover:bg-white/5 hover:text-white"
                               : "text-[#888] hover:bg-white/5 hover:text-white"
                           }`}
                         >
                           <span
                             className={`w-5 h-5 rounded-full border flex-shrink-0 flex items-center justify-center transition-colors duration-150 ${
-                              isDone ? "bg-[#FF6B00] border-[#FF6B00]" : "border-white/20"
+                              isDone ? "bg-[#FF6B00] border-[#FF6B00]" : isSelected ? "border-[#FF6B00]/60" : "border-white/20"
                             }`}
                           >
-                            {isDone && (
+                            {isDone ? (
                               <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                               </svg>
+                            ) : (
+                              <span className="text-[9px] font-bold text-[#555]">{String(lessonIdx + 1).padStart(2, '0')}</span>
                             )}
                           </span>
-                          <span className="text-sm font-medium leading-snug">{lesson.title}</span>
+                          <span className="text-sm font-medium leading-snug flex-1">{lesson.title}</span>
+                          {lesson.slidePages > 0 && (
+                            <span className="text-[10px] text-[#555] font-medium flex-shrink-0">{lesson.slidePages}s</span>
+                          )}
                         </button>
                       )
                     })}
@@ -296,7 +303,7 @@ export default function CourseView({ completedIds: initial, userId }: Props) {
 
               {/* Lesson info */}
               <div className="bg-[#0a0a0a] border border-white/8 rounded-2xl p-6 space-y-4">
-                <h1 className="text-2xl font-bold text-white">{selectedLesson.title}</h1>
+                <h1 className="text-3xl font-black text-white border-l-4 border-[#FF6B00] pl-4">{selectedLesson.title}</h1>
                 {selectedLesson.description && (
                   <p className="text-[#888] leading-relaxed">{selectedLesson.description}</p>
                 )}

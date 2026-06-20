@@ -60,6 +60,7 @@ export default function DashboardNav({ user, hasUnreadAnnouncements }: Props) {
   const links: { href: string; label: string; icon: string; unread?: boolean }[] = [
     { href: "/dashboard", label: "Course", icon: "📚" },
     { href: "/dashboard/community", label: "Community", icon: "💬", unread: hasUnreadCommunity },
+    { href: "/dashboard/leads", label: "Leads", icon: "📋" },
     { href: "/dashboard/ask", label: "Ask AI", icon: "🤖" },
     { href: "/dashboard/announcements", label: "Announcements", icon: "📢", unread: hasUnreadAnnouncements },
     { href: "/dashboard/mentorship", label: "Mentorship", icon: "🎯" },

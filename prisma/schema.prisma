@@ -37,6 +37,7 @@ model User {
   progressEntries    ProgressEntry[]
   groupCallInvites   GroupCallInvite[]
   callRequests       CallRequest[]
+  leads              Lead[]
 }
 
 model InviteCode {
@@ -152,6 +153,27 @@ model CallRequest {
   status        String   @default("pending") // pending | confirmed | done
   createdAt     DateTime @default(now())
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Lead {
+  id           String   @id @default(cuid())
+  userId       String
+  businessName String   @default("")
+  niche        String   @default("")
+  social       String   @default("")
+  phone        String   @default("")
+  city         String   @default("")
+  website      String   @default("")
+  email        String   @default("")
+  source       String   @default("")
+  notes        String   @default("")
+  runningAds   Boolean  @default(false)
+  contacted    Boolean  @default(false)
+  replied      Boolean  @default(false)
+  followedUp   Boolean  @default(false)
+  bookedCall   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model GroupCallInvite {

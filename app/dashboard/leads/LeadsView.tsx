@@ -46,6 +46,14 @@ export default function LeadsView() {
   const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null)
   const [editVal, setEditVal] = useState("")
 
+  // Bulk paste
+  const [showBulk, setShowBulk] = useState(false)
+  const [bulkBusiness, setBulkBusiness] = useState("")
+  const [bulkNiche, setBulkNiche] = useState("")
+  const [bulkSocial, setBulkSocial] = useState("")
+  const [bulkPhone, setBulkPhone] = useState("")
+  const [bulkAdding, setBulkAdding] = useState(false)
+
   useEffect(() => {
     fetch("/api/leads").then(r => r.json()).then(data => {
       setLeads(Array.isArray(data) ? data : [])
@@ -65,6 +73,39 @@ export default function LeadsView() {
     setLeads(prev => [created, ...prev])
     setNewLead({ ...EMPTY })
     setAdding(false)
+  }
+
+  async function addBulk() {
+    const businesses = bulkBusiness.split("\n").map(s => s.trim())
+    const niches = bulkNiche.split("\n").map(s => s.trim())
+    const socials = bulkSocial.split("\n").map(s => s.trim())
+    const phones = bulkPhone.split("\n").map(s => s.trim())
+    const count = Math.max(
+      businesses.filter(Boolean).length,
+      niches.filter(Boolean).length,
+      socials.filter(Boolean).length,
+      phones.filter(Boolean).length
+    )
+    if (count === 0) return
+    setBulkAdding(true)
+    const created: Lead[] = []
+    for (let i = 0; i < count; i++) {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessName: businesses[i] || "",
+          niche: niches[i] || "",
+          social: socials[i] || "",
+          phone: phones[i] || "",
+        })
+      })
+      created.push(await res.json())
+    }
+    setLeads(prev => [...created.reverse(), ...prev])
+    setBulkBusiness(""); setBulkNiche(""); setBulkSocial(""); setBulkPhone("")
+    setBulkAdding(false)
+    setShowBulk(false)
   }
 
   async function toggleBool(id: string, field: string, current: boolean) {
@@ -98,6 +139,13 @@ export default function LeadsView() {
 
   const visibleExtraCols = EXTRA_COLS.filter(c => extraCols.includes(c.key))
   const availableToAdd = EXTRA_COLS.filter(c => !extraCols.includes(c.key))
+
+  const bulkCount = Math.max(
+    bulkBusiness.split("\n").filter(s => s.trim()).length,
+    bulkNiche.split("\n").filter(s => s.trim()).length,
+    bulkSocial.split("\n").filter(s => s.trim()).length,
+    bulkPhone.split("\n").filter(s => s.trim()).length
+  )
 
   const BoolCell = ({ lead, field }: { lead: Lead; field: keyof Lead }) => {
     const val = lead[field] as boolean
@@ -141,19 +189,27 @@ export default function LeadsView() {
 
   return (
     <div className="w-full px-4 py-6 space-y-4">
+
+      {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-white font-black text-2xl">📋 Lead Sheet</h1>
           <p className="text-[#888] text-sm mt-0.5">{leads.length} lead{leads.length !== 1 ? 's' : ''} tracked</p>
         </div>
-        <div className="relative">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowBulk(!showBulk)}
+            className={`text-xs font-semibold px-3 py-2 rounded-lg border transition-colors ${showBulk ? 'bg-[#FF6B00] border-[#FF6B00] text-white' : 'text-[#FF6B00] border-[#FF6B00]/30 hover:bg-[#FF6B00]/10'}`}
+          >
+            ⚡ Bulk Paste
+          </button>
           {availableToAdd.length > 0 && (
-            <>
+            <div className="relative">
               <button
                 onClick={() => setShowAddCol(!showAddCol)}
                 className="text-xs text-[#888] hover:text-white border border-white/10 hover:border-white/20 px-3 py-2 rounded-lg transition-colors"
               >
-                + Add Column
+                + Column
               </button>
               {showAddCol && (
                 <div className="absolute right-0 top-full mt-1 bg-[#111] border border-white/10 rounded-xl p-2 z-50 min-w-[160px] shadow-xl">
@@ -168,11 +224,61 @@ export default function LeadsView() {
                   ))}
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>
 
+      {/* Bulk paste panel */}
+      {showBulk && (
+        <div className="bg-[#0d0d0d] border border-[#FF6B00]/20 rounded-2xl p-5 space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-white font-bold text-sm">⚡ Bulk Paste</p>
+              <p className="text-[#666] text-xs mt-0.5">Paste one entry per line in each column. Lines match up — you can fill just Phone and leave the rest blank.</p>
+            </div>
+            {bulkCount > 0 && (
+              <span className="text-[#FF6B00] text-xs font-bold bg-[#FF6B00]/10 px-3 py-1 rounded-full whitespace-nowrap">{bulkCount} ready</span>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {([
+              { label: "Business Name", val: bulkBusiness, set: setBulkBusiness, placeholder: "Nike\nAdidas\nPuma", accent: true },
+              { label: "Niche", val: bulkNiche, set: setBulkNiche, placeholder: "Fashion\nSports\nLifestyle", accent: false },
+              { label: "Instagram / Social", val: bulkSocial, set: setBulkSocial, placeholder: "@nike\n@adidas\n@puma", accent: false },
+              { label: "Phone", val: bulkPhone, set: setBulkPhone, placeholder: "0821234567\n0831234567\n0841234567", accent: false },
+            ] as const).map(col => (
+              <div key={col.label} className="space-y-1">
+                <label className={`text-xs font-bold uppercase tracking-wider ${col.accent ? 'text-[#FF6B00]' : 'text-[#888]'}`}>{col.label}</label>
+                <textarea
+                  value={col.val}
+                  onChange={e => col.set(e.target.value)}
+                  placeholder={col.placeholder}
+                  rows={7}
+                  className="w-full bg-[#1a1a1a] border border-white/10 focus:border-[#FF6B00]/40 rounded-xl px-3 py-2 text-white text-xs placeholder-[#333] outline-none resize-none leading-relaxed font-mono"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={addBulk}
+              disabled={bulkAdding || bulkCount === 0}
+              className="bg-[#FF6B00] hover:bg-[#e05e00] disabled:opacity-40 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-colors"
+            >
+              {bulkAdding ? `Adding ${bulkCount} leads...` : `Add ${bulkCount > 0 ? bulkCount : ''} Lead${bulkCount !== 1 ? 's' : ''}`}
+            </button>
+            <button
+              onClick={() => { setShowBulk(false); setBulkBusiness(""); setBulkNiche(""); setBulkSocial(""); setBulkPhone("") }}
+              className="text-[#666] hover:text-white text-sm transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Table */}
       <div className="overflow-x-auto rounded-xl border border-white/8">
         <table className="w-full text-sm border-collapse">
           <thead>
@@ -196,6 +302,7 @@ export default function LeadsView() {
             </tr>
           </thead>
           <tbody>
+            {/* Single add row */}
             <tr className="border-b border-white/5 bg-[#FF6B00]/4">
               <td className="px-4 py-2">
                 <input value={newLead.businessName} onChange={e => setNewLead(p => ({ ...p, businessName: e.target.value }))} onKeyDown={e => e.key === 'Enter' && addLead()} placeholder="Business name..." className="w-full bg-transparent border-b border-[#FF6B00]/40 text-white text-xs placeholder-[#555] outline-none py-1 focus:border-[#FF6B00]" style={{ fontSize: '13px' }} />
@@ -215,7 +322,7 @@ export default function LeadsView() {
             {loading ? (
               <tr><td colSpan={99} className="px-4 py-8 text-center text-[#555] text-sm">Loading...</td></tr>
             ) : leads.length === 0 ? (
-              <tr><td colSpan={99} className="px-4 py-10 text-center text-[#555] text-sm">No leads yet. Add your first one above ↑</td></tr>
+              <tr><td colSpan={99} className="px-4 py-10 text-center text-[#555] text-sm">No leads yet. Add above or hit ⚡ Bulk Paste ↑</td></tr>
             ) : leads.map((lead, idx) => (
               <tr key={lead.id} className={`border-b border-white/5 hover:bg-white/3 transition-colors ${idx % 2 === 0 ? '' : 'bg-white/[0.015]'}`}>
                 <td className="px-4 py-2 min-w-[140px]"><TextCell lead={lead} field="businessName" /></td>

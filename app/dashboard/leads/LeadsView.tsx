@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect } from "react"
 
 interface Lead {
   id: string
@@ -20,55 +20,39 @@ interface Lead {
   createdAt: string
 }
 
-type TextField = "businessName" | "niche" | "social" | "phone" | "city" | "website" | "email" | "source" | "notes"
-type BoolField = "runningAds" | "contacted" | "replied" | "followedUp" | "bookedCall"
-
-const DEFAULT_COLS: { key: TextField; label: string; width: number }[] = [
-  { key: "businessName", label: "Business Name", width: 160 },
-  { key: "niche", label: "Niche", width: 130 },
-  { key: "social", label: "Instagram / Social", width: 150 },
-  { key: "phone", label: "Phone", width: 130 },
+const EXTRA_COLS = [
+  { key: "city", label: "City" },
+  { key: "website", label: "Website" },
+  { key: "email", label: "Email" },
+  { key: "source", label: "Source" },
+  { key: "contacted", label: "Contacted?", type: "bool" },
+  { key: "bookedCall", label: "Booked Call?", type: "bool" },
+  { key: "notes", label: "Notes" },
 ]
 
-const BOOL_COLS: { key: BoolField; label: string; width: number }[] = [
-  { key: "runningAds", label: "Ads?", width: 70 },
-  { key: "replied", label: "Replied?", width: 80 },
-  { key: "followedUp", label: "Follow-Up?", width: 90 },
-]
-
-const EXTRA_TEXT_COLS: { key: TextField; label: string; width: number }[] = [
-  { key: "city", label: "City", width: 120 },
-  { key: "website", label: "Website", width: 140 },
-  { key: "email", label: "Email", width: 160 },
-  { key: "source", label: "Source", width: 120 },
-  { key: "notes", label: "Notes", width: 180 },
-]
-
-const EXTRA_BOOL_COLS: { key: BoolField; label: string; width: number }[] = [
-  { key: "contacted", label: "Contacted?", width: 90 },
-  { key: "bookedCall", label: "Booked Call?", width: 100 },
-]
-
-const EMPTY_LEAD = (): Omit<Lead, 'id' | 'createdAt'> => ({
+const EMPTY: Omit<Lead, 'id' | 'createdAt'> = {
   businessName: "", niche: "", social: "", phone: "",
   city: "", website: "", email: "", source: "", notes: "",
   runningAds: false, contacted: false, replied: false, followedUp: false, bookedCall: false
-})
-
-// Number of blank rows to always show at the bottom
-const BLANK_ROWS = 8
+}
 
 export default function LeadsView() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
-  const [extraTextCols, setExtraTextCols] = useState<string[]>([])
-  const [extraBoolCols, setExtraBoolCols] = useState<string[]>([])
+  const [adding, setAdding] = useState(false)
+  const [newLead, setNewLead] = useState({ ...EMPTY })
+  const [extraCols, setExtraCols] = useState<string[]>([])
   const [showAddCol, setShowAddCol] = useState(false)
-  const [saving, setSaving] = useState<Set<string>>(new Set())
+  const [editingCell, setEditingCell] = useState<{ id: string; field: string } | null>(null)
+  const [editVal, setEditVal] = useState("")
 
-  // Draft rows: keyed by rowIndex (for blank rows at bottom)
-  const [drafts, setDrafts] = useState<Record<number, Partial<Omit<Lead, 'id' | 'createdAt'>>>>({})
-  const cellRefs = useRef<Record<string, HTMLInputElement | null>>({})
+  // Bulk paste
+  const [showBulk, setShowBulk] = useState(false)
+  const [bulkBusiness, setBulkBusiness] = useState("")
+  const [bulkNiche, setBulkNiche] = useState("")
+  const [bulkSocial, setBulkSocial] = useState("")
+  const [bulkPhone, setBulkPhone] = useState("")
+  const [bulkAdding, setBulkAdding] = useState(false)
 
   useEffect(() => {
     fetch("/api/leads").then(r => r.json()).then(data => {
@@ -77,76 +61,60 @@ export default function LeadsView() {
     }).catch(() => setLoading(false))
   }, [])
 
-  const visibleTextCols = [...DEFAULT_COLS, ...EXTRA_TEXT_COLS.filter(c => extraTextCols.includes(c.key))]
-  const visibleBoolCols = [...BOOL_COLS, ...EXTRA_BOOL_COLS.filter(c => extraBoolCols.includes(c.key))]
-  const allCols = [...visibleTextCols, ...visibleBoolCols]
-  const availableExtra = [
-    ...EXTRA_TEXT_COLS.filter(c => !extraTextCols.includes(c.key)),
-    ...EXTRA_BOOL_COLS.filter(c => !extraBoolCols.includes(c.key)),
-  ]
-
-  // Save an existing lead field
-  async function saveField(id: string, field: string, value: string | boolean) {
-    setSaving(prev => new Set(prev).add(id))
-    setLeads(prev => prev.map(l => l.id === id ? { ...l, [field]: value } : l))
-    await fetch(`/api/leads/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ [field]: value })
-    })
-    setSaving(prev => { const s = new Set(prev); s.delete(id); return s })
-  }
-
-  // Commit a draft blank row to DB
-  async function commitDraft(rowIdx: number) {
-    const draft = drafts[rowIdx]
-    if (!draft) return
-    const hasContent = Object.values(draft).some(v => typeof v === 'string' ? v.trim() : false)
-    if (!hasContent) return
-
+  async function addLead() {
+    if (!newLead.businessName.trim()) return
+    setAdding(true)
     const res = await fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...EMPTY_LEAD(), ...draft })
+      body: JSON.stringify(newLead)
     })
     const created = await res.json()
-    setLeads(prev => [...prev, created])
-    setDrafts(prev => { const d = { ...prev }; delete d[rowIdx]; return d })
+    setLeads(prev => [created, ...prev])
+    setNewLead({ ...EMPTY })
+    setAdding(false)
   }
 
-  function updateDraft(rowIdx: number, field: string, value: string) {
-    setDrafts(prev => ({ ...prev, [rowIdx]: { ...(prev[rowIdx] || {}), [field]: value } }))
-  }
-
-  // Navigate cells with Tab/Enter/Arrow keys
-  function handleKeyNav(e: React.KeyboardEvent, rowIdx: number, colIdx: number, isExisting: boolean) {
-    const totalCols = visibleTextCols.length
-    const totalRows = leads.length + BLANK_ROWS
-
-    let nextRow = rowIdx
-    let nextCol = colIdx
-
-    if (e.key === 'Tab' || e.key === 'Enter') {
-      e.preventDefault()
-      if (e.shiftKey) {
-        nextCol = colIdx - 1
-        if (nextCol < 0) { nextCol = totalCols - 1; nextRow = rowIdx - 1 }
-      } else {
-        nextCol = colIdx + 1
-        if (nextCol >= totalCols) { nextCol = 0; nextRow = rowIdx + 1 }
-      }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault(); nextRow = rowIdx + 1
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault(); nextRow = rowIdx - 1
-    } else {
-      return
+  async function addBulk() {
+    const businesses = bulkBusiness.split("\n").map(s => s.trim())
+    const niches = bulkNiche.split("\n").map(s => s.trim())
+    const socials = bulkSocial.split("\n").map(s => s.trim())
+    const phones = bulkPhone.split("\n").map(s => s.trim())
+    const count = Math.max(
+      businesses.filter(Boolean).length,
+      niches.filter(Boolean).length,
+      socials.filter(Boolean).length,
+      phones.filter(Boolean).length
+    )
+    if (count === 0) return
+    setBulkAdding(true)
+    const created: Lead[] = []
+    for (let i = 0; i < count; i++) {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          businessName: businesses[i] || "",
+          niche: niches[i] || "",
+          social: socials[i] || "",
+          phone: phones[i] || "",
+        })
+      })
+      created.push(await res.json())
     }
+    setLeads(prev => [...created.reverse(), ...prev])
+    setBulkBusiness(""); setBulkNiche(""); setBulkSocial(""); setBulkPhone("")
+    setBulkAdding(false)
+    setShowBulk(false)
+  }
 
-    nextRow = Math.max(0, Math.min(totalRows - 1, nextRow))
-    nextCol = Math.max(0, Math.min(totalCols - 1, nextCol))
-    const ref = cellRefs.current[`${nextRow}-${nextCol}`]
-    if (ref) { ref.focus(); ref.select() }
+  async function toggleBool(id: string, field: string, current: boolean) {
+    setLeads(prev => prev.map(l => l.id === id ? { ...l, [field]: !current } : l))
+    await fetch(`/api/leads/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [field]: !current })
+    })
   }
 
   async function deleteLead(id: string) {
@@ -154,148 +122,230 @@ export default function LeadsView() {
     await fetch(`/api/leads/${id}`, { method: "DELETE" })
   }
 
-  const totalLeads = leads.length
+  async function saveCell(id: string, field: string, value: string) {
+    setLeads(prev => prev.map(l => l.id === id ? { ...l, [field]: value } : l))
+    setEditingCell(null)
+    await fetch(`/api/leads/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [field]: value })
+    })
+  }
+
+  function startEdit(id: string, field: string, current: string) {
+    setEditingCell({ id, field })
+    setEditVal(current)
+  }
+
+  const visibleExtraCols = EXTRA_COLS.filter(c => extraCols.includes(c.key))
+  const availableToAdd = EXTRA_COLS.filter(c => !extraCols.includes(c.key))
+
+  const bulkCount = Math.max(
+    bulkBusiness.split("\n").filter(s => s.trim()).length,
+    bulkNiche.split("\n").filter(s => s.trim()).length,
+    bulkSocial.split("\n").filter(s => s.trim()).length,
+    bulkPhone.split("\n").filter(s => s.trim()).length
+  )
+
+  const BoolCell = ({ lead, field }: { lead: Lead; field: keyof Lead }) => {
+    const val = lead[field] as boolean
+    return (
+      <div className="flex justify-center">
+        <button
+          onClick={() => toggleBool(lead.id, field, val)}
+          className={`w-9 h-5 rounded-full transition-all duration-200 relative ${val ? 'bg-[#FF6B00]' : 'bg-white/10'}`}
+        >
+          <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all duration-200 ${val ? 'right-0.5' : 'left-0.5'}`} />
+        </button>
+      </div>
+    )
+  }
+
+  const TextCell = ({ lead, field }: { lead: Lead; field: keyof Lead }) => {
+    const val = (lead[field] as string) || ""
+    const isEditing = editingCell?.id === lead.id && editingCell?.field === field
+    if (isEditing) {
+      return (
+        <input
+          autoFocus
+          value={editVal}
+          onChange={e => setEditVal(e.target.value)}
+          onBlur={() => saveCell(lead.id, field, editVal)}
+          onKeyDown={e => { if (e.key === 'Enter') saveCell(lead.id, field, editVal); if (e.key === 'Escape') setEditingCell(null) }}
+          className="w-full bg-[#1a1a1a] border border-[#FF6B00]/50 rounded px-2 py-1 text-white text-xs outline-none"
+          style={{ fontSize: '13px' }}
+        />
+      )
+    }
+    return (
+      <button
+        onClick={() => startEdit(lead.id, field, val)}
+        className="w-full text-left text-xs text-[#ccc] hover:text-white px-1 py-0.5 rounded hover:bg-white/5 transition-colors truncate max-w-[160px]"
+      >
+        {val || <span className="text-[#444]">—</span>}
+      </button>
+    )
+  }
 
   return (
-    <div className="w-full px-2 py-4 space-y-3">
+    <div className="w-full px-4 py-6 space-y-4">
+
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3 px-2">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-white font-black text-2xl">📋 Lead Sheet</h1>
-          <p className="text-[#888] text-sm mt-0.5">{totalLeads} lead{totalLeads !== 1 ? 's' : ''}</p>
+          <p className="text-[#888] text-sm mt-0.5">{leads.length} lead{leads.length !== 1 ? 's' : ''} tracked</p>
         </div>
-        {availableExtra.length > 0 && (
-          <div className="relative">
-            <button
-              onClick={() => setShowAddCol(!showAddCol)}
-              className="text-xs text-[#888] hover:text-white border border-white/10 hover:border-white/20 px-3 py-2 rounded-lg transition-colors"
-            >
-              + Add Column
-            </button>
-            {showAddCol && (
-              <div className="absolute right-0 top-full mt-1 bg-[#111] border border-white/10 rounded-xl p-2 z-50 min-w-[160px] shadow-xl">
-                {availableExtra.map(c => (
-                  <button
-                    key={c.key}
-                    onClick={() => {
-                      if (EXTRA_TEXT_COLS.find(x => x.key === c.key)) setExtraTextCols(prev => [...prev, c.key])
-                      else setExtraBoolCols(prev => [...prev, c.key])
-                      setShowAddCol(false)
-                    }}
-                    className="w-full text-left text-sm text-[#888] hover:text-white hover:bg-white/5 px-3 py-2 rounded-lg transition-colors"
-                  >
-                    {c.label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowBulk(!showBulk)}
+            className={`text-xs font-semibold px-3 py-2 rounded-lg border transition-colors ${showBulk ? 'bg-[#FF6B00] border-[#FF6B00] text-white' : 'text-[#FF6B00] border-[#FF6B00]/30 hover:bg-[#FF6B00]/10'}`}
+          >
+            ⚡ Bulk Paste
+          </button>
+          {availableToAdd.length > 0 && (
+            <div className="relative">
+              <button
+                onClick={() => setShowAddCol(!showAddCol)}
+                className="text-xs text-[#888] hover:text-white border border-white/10 hover:border-white/20 px-3 py-2 rounded-lg transition-colors"
+              >
+                + Column
+              </button>
+              {showAddCol && (
+                <div className="absolute right-0 top-full mt-1 bg-[#111] border border-white/10 rounded-xl p-2 z-50 min-w-[160px] shadow-xl">
+                  {availableToAdd.map(c => (
+                    <button
+                      key={c.key}
+                      onClick={() => { setExtraCols(prev => [...prev, c.key]); setShowAddCol(false) }}
+                      className="w-full text-left text-sm text-[#888] hover:text-white hover:bg-white/5 px-3 py-2 rounded-lg transition-colors"
+                    >
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Spreadsheet */}
+      {/* Bulk paste panel */}
+      {showBulk && (
+        <div className="bg-[#0d0d0d] border border-[#FF6B00]/20 rounded-2xl p-5 space-y-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-white font-bold text-sm">⚡ Bulk Paste</p>
+              <p className="text-[#666] text-xs mt-0.5">Paste one entry per line in each column. Lines match up — you can fill just Phone and leave the rest blank.</p>
+            </div>
+            {bulkCount > 0 && (
+              <span className="text-[#FF6B00] text-xs font-bold bg-[#FF6B00]/10 px-3 py-1 rounded-full whitespace-nowrap">{bulkCount} ready</span>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {([
+              { label: "Business Name", val: bulkBusiness, set: setBulkBusiness, placeholder: "Nike\nAdidas\nPuma", accent: true },
+              { label: "Niche", val: bulkNiche, set: setBulkNiche, placeholder: "Fashion\nSports\nLifestyle", accent: false },
+              { label: "Instagram / Social", val: bulkSocial, set: setBulkSocial, placeholder: "@nike\n@adidas\n@puma", accent: false },
+              { label: "Phone", val: bulkPhone, set: setBulkPhone, placeholder: "0821234567\n0831234567\n0841234567", accent: false },
+            ] as const).map(col => (
+              <div key={col.label} className="space-y-1">
+                <label className={`text-xs font-bold uppercase tracking-wider ${col.accent ? 'text-[#FF6B00]' : 'text-[#888]'}`}>{col.label}</label>
+                <textarea
+                  value={col.val}
+                  onChange={e => col.set(e.target.value)}
+                  placeholder={col.placeholder}
+                  rows={7}
+                  className="w-full bg-[#1a1a1a] border border-white/10 focus:border-[#FF6B00]/40 rounded-xl px-3 py-2 text-white text-xs placeholder-[#333] outline-none resize-none leading-relaxed font-mono"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={addBulk}
+              disabled={bulkAdding || bulkCount === 0}
+              className="bg-[#FF6B00] hover:bg-[#e05e00] disabled:opacity-40 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-colors"
+            >
+              {bulkAdding ? `Adding ${bulkCount} leads...` : `Add ${bulkCount > 0 ? bulkCount : ''} Lead${bulkCount !== 1 ? 's' : ''}`}
+            </button>
+            <button
+              onClick={() => { setShowBulk(false); setBulkBusiness(""); setBulkNiche(""); setBulkSocial(""); setBulkPhone("") }}
+              className="text-[#666] hover:text-white text-sm transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Table */}
       <div className="overflow-x-auto rounded-xl border border-white/8">
-        <table className="border-collapse" style={{ tableLayout: 'fixed', minWidth: '100%' }}>
-          <colgroup>
-            <col style={{ width: 32 }} />
-            {visibleTextCols.map(c => <col key={c.key} style={{ width: c.width }} />)}
-            {visibleBoolCols.map(c => <col key={c.key} style={{ width: c.width }} />)}
-            <col style={{ width: 36 }} />
-          </colgroup>
+        <table className="w-full text-sm border-collapse">
           <thead>
             <tr className="bg-[#0d0d0d] border-b border-white/8">
-              <th className="px-2 py-2 text-[#444] text-xs font-mono">#</th>
-              {visibleTextCols.map((c, i) => (
-                <th key={c.key} className={`px-3 py-2 text-left text-xs font-bold uppercase tracking-wider whitespace-nowrap ${i === 0 ? 'text-[#FF6B00]' : 'text-[#666]'}`}>
-                  {c.label}
-                </th>
-              ))}
-              {visibleBoolCols.map(c => (
-                <th key={c.key} className="px-2 py-2 text-center text-xs font-bold uppercase tracking-wider text-[#666] whitespace-nowrap">
-                  <span className="flex items-center justify-center gap-1">
+              <th className="text-left px-4 py-3 text-xs font-bold text-[#FF6B00] uppercase tracking-wider whitespace-nowrap">Business</th>
+              <th className="text-left px-4 py-3 text-xs font-bold text-[#888] uppercase tracking-wider whitespace-nowrap">Niche</th>
+              <th className="text-left px-4 py-3 text-xs font-bold text-[#888] uppercase tracking-wider whitespace-nowrap">Instagram / Social</th>
+              <th className="text-left px-4 py-3 text-xs font-bold text-[#888] uppercase tracking-wider whitespace-nowrap">Phone</th>
+              <th className="text-center px-4 py-3 text-xs font-bold text-[#888] uppercase tracking-wider whitespace-nowrap">Running Ads?</th>
+              <th className="text-center px-4 py-3 text-xs font-bold text-[#888] uppercase tracking-wider whitespace-nowrap">Replied?</th>
+              <th className="text-center px-4 py-3 text-xs font-bold text-[#888] uppercase tracking-wider whitespace-nowrap">Follow-Up?</th>
+              {visibleExtraCols.map(c => (
+                <th key={c.key} className="text-left px-4 py-3 text-xs font-bold text-[#888] uppercase tracking-wider whitespace-nowrap">
+                  <span className="flex items-center gap-2">
                     {c.label}
-                    {EXTRA_BOOL_COLS.find(x => x.key === c.key) && (
-                      <button onClick={() => setExtraBoolCols(prev => prev.filter(k => k !== c.key))} className="text-[#333] hover:text-red-400 ml-1">×</button>
-                    )}
+                    <button onClick={() => setExtraCols(prev => prev.filter(k => k !== c.key))} className="text-[#444] hover:text-red-400">×</button>
                   </span>
                 </th>
               ))}
-              <th className="px-2 py-2" />
+              <th className="px-4 py-3 w-8" />
             </tr>
           </thead>
           <tbody>
+            {/* Single add row */}
+            <tr className="border-b border-white/5 bg-[#FF6B00]/4">
+              <td className="px-4 py-2">
+                <input value={newLead.businessName} onChange={e => setNewLead(p => ({ ...p, businessName: e.target.value }))} onKeyDown={e => e.key === 'Enter' && addLead()} placeholder="Business name..." className="w-full bg-transparent border-b border-[#FF6B00]/40 text-white text-xs placeholder-[#555] outline-none py-1 focus:border-[#FF6B00]" style={{ fontSize: '13px' }} />
+              </td>
+              <td className="px-4 py-2"><input value={newLead.niche} onChange={e => setNewLead(p => ({ ...p, niche: e.target.value }))} placeholder="Niche..." className="w-full bg-transparent border-b border-white/10 text-white text-xs placeholder-[#444] outline-none py-1" style={{ fontSize: '13px' }} /></td>
+              <td className="px-4 py-2"><input value={newLead.social} onChange={e => setNewLead(p => ({ ...p, social: e.target.value }))} placeholder="@handle" className="w-full bg-transparent border-b border-white/10 text-white text-xs placeholder-[#444] outline-none py-1" style={{ fontSize: '13px' }} /></td>
+              <td className="px-4 py-2"><input value={newLead.phone} onChange={e => setNewLead(p => ({ ...p, phone: e.target.value }))} placeholder="Phone..." className="w-full bg-transparent border-b border-white/10 text-white text-xs placeholder-[#444] outline-none py-1" style={{ fontSize: '13px' }} /></td>
+              <td /><td /><td />
+              {visibleExtraCols.map(c => <td key={c.key} />)}
+              <td className="px-4 py-2">
+                <button onClick={addLead} disabled={adding || !newLead.businessName.trim()} className="bg-[#FF6B00] hover:bg-[#e05e00] disabled:opacity-40 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+                  {adding ? "..." : "+ Add"}
+                </button>
+              </td>
+            </tr>
+
             {loading ? (
               <tr><td colSpan={99} className="px-4 py-8 text-center text-[#555] text-sm">Loading...</td></tr>
-            ) : (
-              <>
-                {/* Existing lead rows */}
-                {leads.map((lead, rowIdx) => (
-                  <tr key={lead.id} className={`border-b border-white/5 group ${rowIdx % 2 === 0 ? 'bg-[#080808]' : 'bg-[#0a0a0a]'}`}>
-                    <td className="px-2 py-0 text-center text-[#333] text-xs font-mono">{rowIdx + 1}</td>
-                    {visibleTextCols.map((col, colIdx) => (
-                      <td key={col.key} className="p-0 border-r border-white/5">
-                        <input
-                          ref={el => { cellRefs.current[`${rowIdx}-${colIdx}`] = el }}
-                          value={(lead[col.key as keyof Lead] as string) || ""}
-                          onChange={e => setLeads(prev => prev.map(l => l.id === lead.id ? { ...l, [col.key]: e.target.value } : l))}
-                          onBlur={e => saveField(lead.id, col.key, e.target.value)}
-                          onKeyDown={e => handleKeyNav(e, rowIdx, colIdx, true)}
-                          className="w-full h-9 px-3 bg-transparent text-white text-xs outline-none focus:bg-[#FF6B00]/8 focus:ring-1 focus:ring-[#FF6B00]/30 placeholder-[#333] transition-colors"
-                          style={{ fontSize: '13px' }}
-                          placeholder={colIdx === 0 ? "Type here..." : ""}
-                        />
-                      </td>
-                    ))}
-                    {visibleBoolCols.map(col => (
-                      <td key={col.key} className="p-0 border-r border-white/5">
-                        <div className="flex justify-center items-center h-9">
-                          <button
-                            onClick={() => saveField(lead.id, col.key, !(lead[col.key as keyof Lead] as boolean))}
-                            className={`w-9 h-5 rounded-full transition-all duration-200 relative ${(lead[col.key as keyof Lead] as boolean) ? 'bg-[#FF6B00]' : 'bg-white/10'}`}
-                          >
-                            <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full transition-all duration-200 ${(lead[col.key as keyof Lead] as boolean) ? 'right-0.5' : 'left-0.5'}`} />
-                          </button>
-                        </div>
-                      </td>
-                    ))}
-                    <td className="px-2 py-0 text-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => deleteLead(lead.id)} className="text-[#444] hover:text-red-400 transition-colors text-base leading-none">×</button>
-                    </td>
-                  </tr>
+            ) : leads.length === 0 ? (
+              <tr><td colSpan={99} className="px-4 py-10 text-center text-[#555] text-sm">No leads yet. Add above or hit ⚡ Bulk Paste ↑</td></tr>
+            ) : leads.map((lead, idx) => (
+              <tr key={lead.id} className={`border-b border-white/5 hover:bg-white/3 transition-colors ${idx % 2 === 0 ? '' : 'bg-white/[0.015]'}`}>
+                <td className="px-4 py-2 min-w-[140px]"><TextCell lead={lead} field="businessName" /></td>
+                <td className="px-4 py-2 min-w-[120px]"><TextCell lead={lead} field="niche" /></td>
+                <td className="px-4 py-2 min-w-[140px]"><TextCell lead={lead} field="social" /></td>
+                <td className="px-4 py-2 min-w-[120px]"><TextCell lead={lead} field="phone" /></td>
+                <td className="px-4 py-2"><BoolCell lead={lead} field="runningAds" /></td>
+                <td className="px-4 py-2"><BoolCell lead={lead} field="replied" /></td>
+                <td className="px-4 py-2"><BoolCell lead={lead} field="followedUp" /></td>
+                {visibleExtraCols.map(c => (
+                  <td key={c.key} className="px-4 py-2 min-w-[120px]">
+                    {c.type === 'bool' ? <BoolCell lead={lead} field={c.key as keyof Lead} /> : <TextCell lead={lead} field={c.key as keyof Lead} />}
+                  </td>
                 ))}
-
-                {/* Blank rows for continuous entry */}
-                {Array.from({ length: BLANK_ROWS }).map((_, blankIdx) => {
-                  const rowIdx = leads.length + blankIdx
-                  const draft = drafts[rowIdx] || {}
-                  return (
-                    <tr key={`blank-${blankIdx}`} className={`border-b border-white/3 ${blankIdx % 2 === 0 ? 'bg-[#080808]' : 'bg-[#0a0a0a]'}`}>
-                      <td className="px-2 py-0 text-center text-[#222] text-xs font-mono">{rowIdx + 1}</td>
-                      {visibleTextCols.map((col, colIdx) => (
-                        <td key={col.key} className="p-0 border-r border-white/5">
-                          <input
-                            ref={el => { cellRefs.current[`${rowIdx}-${colIdx}`] = el }}
-                            value={(draft[col.key as keyof typeof draft] as string) || ""}
-                            onChange={e => updateDraft(rowIdx, col.key, e.target.value)}
-                            onBlur={() => commitDraft(rowIdx)}
-                            onKeyDown={e => handleKeyNav(e, rowIdx, colIdx, false)}
-                            className="w-full h-9 px-3 bg-transparent text-white text-xs outline-none focus:bg-[#FF6B00]/5 focus:ring-1 focus:ring-[#FF6B00]/20 placeholder-[#222] transition-colors"
-                            style={{ fontSize: '13px' }}
-                            placeholder={colIdx === 0 && blankIdx === 0 ? "Start typing..." : ""}
-                          />
-                        </td>
-                      ))}
-                      {visibleBoolCols.map(col => <td key={col.key} className="border-r border-white/5" />)}
-                      <td />
-                    </tr>
-                  )
-                })}
-              </>
-            )}
+                <td className="px-4 py-2 text-center">
+                  <button onClick={() => deleteLead(lead.id)} className="text-[#444] hover:text-red-400 transition-colors text-lg leading-none">×</button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
-      <p className="text-[#333] text-xs px-2">Tab / Enter to move between cells · Arrow keys to navigate · Click toggles for status</p>
+      <p className="text-[#444] text-xs">Click any cell to edit · Toggle switches for status · × to delete</p>
     </div>
   )
 }
